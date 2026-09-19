@@ -121,6 +121,21 @@ class CalculatorScreenTest {
     }
 
     @Test
+    fun decimalButtonUsesConfiguredSeparatorAndEmitsDecimalAction() {
+        val actions = mutableListOf<CalculatorAction>()
+        composeRule.setContent {
+            CalculatorScreen(
+                state = CalculatorUiState(decimalSeparator = ','),
+                onAction = actions::add,
+            )
+        }
+
+        composeRule.onNodeWithText(",").performClick()
+
+        assertEquals(listOf(CalculatorAction.Decimal), actions)
+    }
+
+    @Test
     fun pendingCalculationRendersBothDisplayLines() {
         composeRule.setContent {
             CalculatorScreen(
@@ -150,5 +165,22 @@ class CalculatorScreenTest {
 
         composeRule.onNodeWithText("12 + 3 =").assertIsDisplayed()
         composeRule.onNodeWithText("15").assertIsDisplayed()
+    }
+
+    @Test
+    fun errorStateRendersItsExpressionAndVisibleError() {
+        composeRule.setContent {
+            CalculatorScreen(
+                state = CalculatorUiState(
+                    primaryValue = "Error",
+                    secondaryExpression = "1 ÷ 0 =",
+                    displayStatus = CalculatorDisplayStatus.Error,
+                ),
+                onAction = {},
+            )
+        }
+
+        composeRule.onNodeWithText("1 ÷ 0 =").assertIsDisplayed()
+        composeRule.onNodeWithText("Error").assertIsDisplayed()
     }
 }

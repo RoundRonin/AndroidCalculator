@@ -44,4 +44,24 @@ class CalculatorActivityTest {
         composeRule.onNodeWithText("12 × 3 =").assertIsDisplayed()
         composeRule.onNodeWithText("36").assertIsDisplayed()
     }
+
+    @Test
+    fun userRecoversFromDivisionByZeroAndCalculatesAgain() {
+        composeRule.onNodeWithText("1").performClick()
+        composeRule.onNodeWithText("÷").performClick()
+        composeRule.onNodeWithText("0").performClick()
+        composeRule.onNodeWithText("=").performClick()
+
+        composeRule.onNodeWithText("1 ÷ 0 =").assertIsDisplayed()
+        composeRule.onNodeWithText("Error").assertIsDisplayed()
+
+        composeRule.onNodeWithText("CE").performClick()
+        composeRule.onNodeWithText("6").performClick()
+        composeRule.onNodeWithText("÷").performClick()
+        composeRule.onNodeWithText("2").performClick()
+        composeRule.onNodeWithText("=").performClick()
+
+        composeRule.onNodeWithText("6 ÷ 2 =").assertIsDisplayed()
+        composeRule.onNodeWithText("3").assertIsDisplayed()
+    }
 }

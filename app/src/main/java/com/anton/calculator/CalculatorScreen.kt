@@ -61,13 +61,19 @@ fun CalculatorScreen(
                 )
             }
 
-            Keypad(onAction = onAction)
+            Keypad(
+                decimalSeparator = state.decimalSeparator,
+                onAction = onAction,
+            )
         }
     }
 }
 
 @Composable
-private fun Keypad(onAction: (CalculatorAction) -> Unit) {
+private fun Keypad(
+    decimalSeparator: Char,
+    onAction: (CalculatorAction) -> Unit,
+) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         keypadRows.forEach { cells ->
             Row(
@@ -81,6 +87,12 @@ private fun Keypad(onAction: (CalculatorAction) -> Unit) {
                             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                             contentColor = MaterialTheme.colorScheme.onSurface,
                             onClick = { onAction(CalculatorAction.Digit(cell.value)) },
+                        )
+                        KeypadCell.Decimal -> CalculatorKey(
+                            label = decimalSeparator.toString(),
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            contentColor = MaterialTheme.colorScheme.onSurface,
+                            onClick = { onAction(CalculatorAction.Decimal) },
                         )
                         KeypadCell.ClearAll -> CalculatorKey(
                             label = stringResource(R.string.clear_all_label),
@@ -139,6 +151,7 @@ private fun RowScope.CalculatorKey(
 
 private sealed interface KeypadCell {
     data class Digit(val value: Int) : KeypadCell
+    data object Decimal : KeypadCell
     data class Operation(val operation: BinaryOperation) : KeypadCell
     data object ClearAll : KeypadCell
     data object ClearEntry : KeypadCell
@@ -172,7 +185,7 @@ private val keypadRows = listOf(
         KeypadCell.Operation(BinaryOperation.Add),
     ),
     listOf(
-        KeypadCell.Empty,
+        KeypadCell.Decimal,
         KeypadCell.Digit(0),
         KeypadCell.Empty,
         KeypadCell.Equals,

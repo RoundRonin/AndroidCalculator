@@ -5,6 +5,274 @@ import org.junit.Test
 
 class CalculatorViewModelTest {
     @Test
+    fun `decimal starts an operand with the configured separator`() {
+        val viewModel = CalculatorViewModel(decimalSeparator = ',')
+
+        viewModel.onAction(CalculatorAction.Decimal)
+
+        assertEquals("0,", viewModel.uiState.value.primaryValue)
+        assertEquals(',', viewModel.uiState.value.decimalSeparator)
+    }
+
+    @Test
+    fun `an operand accepts only one decimal separator`() {
+        val viewModel = CalculatorViewModel()
+
+        viewModel.onAction(CalculatorAction.Digit(1))
+        viewModel.onAction(CalculatorAction.Decimal)
+        viewModel.onAction(CalculatorAction.Digit(2))
+        viewModel.onAction(CalculatorAction.Decimal)
+
+        assertEquals("1.2", viewModel.uiState.value.primaryValue)
+    }
+
+    @Test
+    fun `decimal starts the second operand without changing the pending operation`() {
+        val viewModel = CalculatorViewModel(decimalSeparator = ',')
+        viewModel.onAction(CalculatorAction.Digit(4))
+        viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Add))
+
+        viewModel.onAction(CalculatorAction.Decimal)
+
+        assertEquals("0,", viewModel.uiState.value.primaryValue)
+        assertEquals("4 +", viewModel.uiState.value.secondaryExpression)
+        viewModel.onAction(CalculatorAction.Digit(5))
+        viewModel.onAction(CalculatorAction.Equals)
+        assertEquals("4,5", viewModel.uiState.value.primaryValue)
+    }
+
+    @Test
+    fun `manual input stops after fifteen significant digits`() {
+        val viewModel = CalculatorViewModel()
+
+        "1234567890123456".forEach { character ->
+            viewModel.onAction(CalculatorAction.Digit(character.digitToInt()))
+        }
+
+        assertEquals("123456789012345", viewModel.uiState.value.primaryValue)
+    }
+
+    @Test
+    fun `synthesized zero does not consume the decimal input limit`() {
+        val viewModel = CalculatorViewModel()
+        viewModel.onAction(CalculatorAction.Decimal)
+
+        "1234567890123456".forEach { character ->
+            viewModel.onAction(CalculatorAction.Digit(character.digitToInt()))
+        }
+
+        assertEquals("0.123456789012345", viewModel.uiState.value.primaryValue)
+    }
+
+    @Test
+    fun `fractional leading zeroes do not consume the significant digit limit`() {
+        val viewModel = CalculatorViewModel()
+        viewModel.onAction(CalculatorAction.Decimal)
+        repeat(10) { viewModel.onAction(CalculatorAction.Digit(0)) }
+
+        "1234567890123456".forEach { character ->
+            viewModel.onAction(CalculatorAction.Digit(character.digitToInt()))
+        }
+
+        assertEquals("0.0000000000123456789012345", viewModel.uiState.value.primaryValue)
+    }
+
+    @Test
+    fun `completed results hide familiar floating point noise`() {
+        val viewModel = CalculatorViewModel()
+        viewModel.onAction(CalculatorAction.Decimal)
+        viewModel.onAction(CalculatorAction.Digit(1))
+        viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Add))
+        viewModel.onAction(CalculatorAction.Decimal)
+        viewModel.onAction(CalculatorAction.Digit(2))
+
+        viewModel.onAction(CalculatorAction.Equals)
+
+        assertEquals("0.3", viewModel.uiState.value.primaryValue)
+    }
+
+    @Test
+    fun `chaining preserves the exact result behind rounded display text`() {
+        val viewModel = CalculatorViewModel()
+        viewModel.onAction(CalculatorAction.Digit(1))
+        viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Divide))
+        viewModel.onAction(CalculatorAction.Digit(3))
+        viewModel.onAction(CalculatorAction.Equals)
+        viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Multiply))
+        viewModel.onAction(CalculatorAction.Digit(1))
+        viewModel.onAction(CalculatorAction.Digit(1))
+
+        viewModel.onAction(CalculatorAction.Equals)
+
+        assertEquals("3.66666666667", viewModel.uiState.value.primaryValue)
+    }
+
+    @Test
+    fun `large results use scientific notation only beyond the plain display threshold`() {
+        val plain = CalculatorViewModel()
+        "100000000000".forEach { character ->
+            plain.onAction(CalculatorAction.Digit(character.digitToInt()))
+        }
+        plain.onAction(CalculatorAction.SelectOperation(BinaryOperation.Add))
+        plain.onAction(CalculatorAction.Digit(0))
+        plain.onAction(CalculatorAction.Equals)
+        assertEquals("100000000000", plain.uiState.value.primaryValue)
+
+        val scientific = CalculatorViewModel()
+        "1000000000000".forEach { character ->
+            scientific.onAction(CalculatorAction.Digit(character.digitToInt()))
+        }
+        scientific.onAction(CalculatorAction.SelectOperation(BinaryOperation.Add))
+        scientific.onAction(CalculatorAction.Digit(0))
+        scientific.onAction(CalculatorAction.Equals)
+        assertEquals("1000000000000", scientific.uiState.value.primaryValue)
+
+        assertEquals(
+            "1E+28",
+            calculate(
+                "100000000000000",
+                BinaryOperation.Multiply,
+                "100000000000000",
+            ).uiState.value.primaryValue,
+        )
+    }
+
+    @Test
+    fun `division by zero produces an explicit error state`() {
+        val viewModel = CalculatorViewModel()
+        viewModel.onAction(CalculatorAction.Digit(1))
+        viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Divide))
+        viewModel.onAction(CalculatorAction.Digit(0))
+
+        viewModel.onAction(CalculatorAction.Equals)
+
+        assertEquals("Error", viewModel.uiState.value.primaryValue)
+        assertEquals(CalculatorDisplayStatus.Error, viewModel.uiState.value.displayStatus)
+        assertEquals("1 ÷ 0 =", viewModel.uiState.value.secondaryExpression)
+    }
+
+    @Test
+    fun `invalid intermediate calculation enters error without crashing`() {
+        val viewModel = CalculatorViewModel()
+        viewModel.enter("1")
+        viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Divide))
+        viewModel.enter("0")
+
+        viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Add))
+
+        assertEquals("Error", viewModel.uiState.value.primaryValue)
+        assertEquals(CalculatorDisplayStatus.Error, viewModel.uiState.value.displayStatus)
+    }
+
+    @Test
+    fun `zero divided by zero is an error rather than NaN`() {
+        val viewModel = calculate("0", BinaryOperation.Divide, "0")
+
+        assertEquals("Error", viewModel.uiState.value.primaryValue)
+        assertEquals(CalculatorDisplayStatus.Error, viewModel.uiState.value.displayStatus)
+    }
+
+    @Test
+    fun `overflow becomes an error rather than infinity`() {
+        val viewModel = CalculatorViewModel()
+        viewModel.enter("999999999999999")
+
+        repeat(24) {
+            if (viewModel.uiState.value.displayStatus != CalculatorDisplayStatus.Error) {
+                viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Multiply))
+                viewModel.enter("999999999999999")
+                viewModel.onAction(CalculatorAction.Equals)
+            }
+        }
+
+        assertEquals("Error", viewModel.uiState.value.primaryValue)
+        assertEquals(CalculatorDisplayStatus.Error, viewModel.uiState.value.displayStatus)
+    }
+
+    @Test
+    fun `result formatting is concise and uses stable scientific thresholds`() {
+        assertEquals("2.5", calculate("5", BinaryOperation.Divide, "2").uiState.value.primaryValue)
+        assertEquals(
+            "0.666666666667",
+            calculate("2", BinaryOperation.Divide, "3").uiState.value.primaryValue,
+        )
+        assertEquals(
+            "0.000001",
+            calculate("1", BinaryOperation.Divide, "1000000").uiState.value.primaryValue,
+        )
+        assertEquals(
+            "0.0000001",
+            calculate("1", BinaryOperation.Divide, "10000000").uiState.value.primaryValue,
+        )
+        assertEquals(
+            "1E-15",
+            calculate("0.000000000000001", BinaryOperation.Add, "0")
+                .uiState.value.primaryValue,
+        )
+    }
+
+    @Test
+    fun `locale separator is used for entry arithmetic and formatted results`() {
+        val viewModel = calculate("1,5", BinaryOperation.Add, "2,25", decimalSeparator = ',')
+
+        assertEquals("3,75", viewModel.uiState.value.primaryValue)
+        assertEquals("1,5 + 2,25 =", viewModel.uiState.value.secondaryExpression)
+    }
+
+    @Test
+    fun `negative zero is normalized in completed results`() {
+        val viewModel = calculate("0", BinaryOperation.Subtract, "1")
+        viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Multiply))
+        viewModel.enter("0")
+        viewModel.onAction(CalculatorAction.Equals)
+
+        assertEquals("0", viewModel.uiState.value.primaryValue)
+    }
+
+    @Test
+    fun `digit after error starts a fresh calculation`() {
+        val viewModel = errorViewModel()
+
+        viewModel.onAction(CalculatorAction.Digit(7))
+
+        assertEquals(CalculatorUiState(primaryValue = "7"), viewModel.uiState.value)
+    }
+
+    @Test
+    fun `decimal after error starts a fresh decimal calculation`() {
+        val viewModel = errorViewModel(decimalSeparator = ',')
+
+        viewModel.onAction(CalculatorAction.Decimal)
+
+        assertEquals(
+            CalculatorUiState(primaryValue = "0,", decimalSeparator = ','),
+            viewModel.uiState.value,
+        )
+    }
+
+    @Test
+    fun `both clear actions reset an error`() {
+        val clearAll = errorViewModel()
+        clearAll.onAction(CalculatorAction.ClearAll)
+        assertEquals(CalculatorUiState(), clearAll.uiState.value)
+
+        val clearEntry = errorViewModel()
+        clearEntry.onAction(CalculatorAction.ClearEntry)
+        assertEquals(CalculatorUiState(), clearEntry.uiState.value)
+    }
+
+    @Test
+    fun `operation and equals leave an error unchanged`() {
+        val viewModel = errorViewModel()
+        val error = viewModel.uiState.value
+
+        viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Add))
+        viewModel.onAction(CalculatorAction.Equals)
+
+        assertEquals(error, viewModel.uiState.value)
+    }
+
+    @Test
     fun `calculator starts at zero with no expression`() {
         val viewModel = CalculatorViewModel()
 
@@ -64,7 +332,11 @@ class CalculatorViewModelTest {
         viewModel.onAction(CalculatorAction.Equals)
 
         assertEquals(
-            CalculatorUiState(primaryValue = "15", secondaryExpression = "12 + 3 ="),
+            CalculatorUiState(
+                primaryValue = "15",
+                secondaryExpression = "12 + 3 =",
+                displayStatus = CalculatorDisplayStatus.Result,
+            ),
             viewModel.uiState.value,
         )
     }
@@ -79,7 +351,11 @@ class CalculatorViewModelTest {
         viewModel.onAction(CalculatorAction.Equals)
 
         assertEquals(
-            CalculatorUiState(primaryValue = "-5", secondaryExpression = "3 − 8 ="),
+            CalculatorUiState(
+                primaryValue = "-5",
+                secondaryExpression = "3 − 8 =",
+                displayStatus = CalculatorDisplayStatus.Result,
+            ),
             viewModel.uiState.value,
         )
     }
@@ -144,7 +420,11 @@ class CalculatorViewModelTest {
         viewModel.onAction(CalculatorAction.Equals)
 
         assertEquals(
-            CalculatorUiState(primaryValue = "30", secondaryExpression = "15 × 2 ="),
+            CalculatorUiState(
+                primaryValue = "30",
+                secondaryExpression = "15 × 2 =",
+                displayStatus = CalculatorDisplayStatus.Result,
+            ),
             viewModel.uiState.value,
         )
     }
@@ -282,5 +562,30 @@ class CalculatorViewModelTest {
         viewModel.onAction(CalculatorAction.Equals)
         viewModel.onAction(CalculatorAction.ClearAll)
         assertEquals(CalculatorUiState(), viewModel.uiState.value)
+    }
+
+    private fun calculate(
+        left: String,
+        operation: BinaryOperation,
+        right: String,
+        decimalSeparator: Char = '.',
+    ): CalculatorViewModel = CalculatorViewModel(decimalSeparator).apply {
+        enter(left)
+        onAction(CalculatorAction.SelectOperation(operation))
+        enter(right)
+        onAction(CalculatorAction.Equals)
+    }
+
+    private fun errorViewModel(decimalSeparator: Char = '.'): CalculatorViewModel =
+        calculate("1", BinaryOperation.Divide, "0", decimalSeparator)
+
+    private fun CalculatorViewModel.enter(value: String) {
+        value.forEach { character ->
+            when {
+                character.isDigit() -> onAction(CalculatorAction.Digit(character.digitToInt()))
+                character == uiState.value.decimalSeparator -> onAction(CalculatorAction.Decimal)
+                else -> error("Unsupported calculator test input: $character")
+            }
+        }
     }
 }

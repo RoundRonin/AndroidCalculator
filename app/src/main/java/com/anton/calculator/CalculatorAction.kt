@@ -7,6 +7,7 @@ sealed interface CalculatorAction {
         }
     }
 
+    data object Decimal : CalculatorAction
     data class SelectOperation(val operation: BinaryOperation) : CalculatorAction
     data object Equals : CalculatorAction
     data object ClearEntry : CalculatorAction
