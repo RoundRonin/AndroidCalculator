@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class CalculatorViewModel : ViewModel() {
     private val mutableUiState = MutableStateFlow(CalculatorUiState())
-    private var pendingCalculation: PendingCalculation? = null
+    private var phase: CalculationPhase = CalculationPhase.EnteringFirstOperand
 
     val uiState: StateFlow<CalculatorUiState> = mutableUiState.asStateFlow()
 
@@ -16,22 +16,46 @@ class CalculatorViewModel : ViewModel() {
             is CalculatorAction.Digit -> appendDigit(action.value)
             is CalculatorAction.SelectOperation -> selectOperation(action.operation)
             CalculatorAction.Equals -> evaluate()
+            CalculatorAction.ClearEntry -> clearEntry()
             CalculatorAction.ClearAll -> clearAll()
         }
     }
 
     private fun appendDigit(digit: Int) {
+        phase = when (val currentPhase = phase) {
+            CalculationPhase.Result -> {
+                mutableUiState.value = CalculatorUiState()
+                CalculationPhase.EnteringFirstOperand
+            }
+            is CalculationPhase.OperationPending ->
+                CalculationPhase.EnteringSecondOperand(currentPhase.calculation)
+            else -> currentPhase
+        }
         val currentValue = mutableUiState.value.primaryValue
         val nextValue = if (currentValue == "0") digit.toString() else currentValue + digit
         mutableUiState.value = mutableUiState.value.copy(primaryValue = nextValue)
     }
 
     private fun selectOperation(operation: BinaryOperation) {
+        when (val currentPhase = phase) {
+            is CalculationPhase.OperationPending -> {
+                val replacement = currentPhase.calculation.copy(operation = operation)
+                phase = CalculationPhase.OperationPending(replacement)
+                mutableUiState.value = mutableUiState.value.copy(
+                    secondaryExpression = "${replacement.operandText} ${operation.symbol}",
+                )
+                return
+            }
+            is CalculationPhase.EnteringSecondOperand -> evaluate()
+            else -> Unit
+        }
         val operandText = mutableUiState.value.primaryValue
-        pendingCalculation = PendingCalculation(
-            operand = operandText.toDouble(),
-            operandText = operandText,
-            operation = operation,
+        phase = CalculationPhase.OperationPending(
+            PendingCalculation(
+                operand = operandText.toDouble(),
+                operandText = operandText,
+                operation = operation,
+            ),
         )
         mutableUiState.value = CalculatorUiState(
             primaryValue = "0",
@@ -40,7 +64,7 @@ class CalculatorViewModel : ViewModel() {
     }
 
     private fun evaluate() {
-        val pending = pendingCalculation ?: return
+        val pending = (phase as? CalculationPhase.EnteringSecondOperand)?.calculation ?: return
         val rightText = mutableUiState.value.primaryValue
         val right = rightText.toDouble()
         val result = when (pending.operation) {
@@ -54,12 +78,25 @@ class CalculatorViewModel : ViewModel() {
             secondaryExpression =
                 "${pending.operandText} ${pending.operation.symbol} $rightText =",
         )
-        pendingCalculation = null
+        phase = CalculationPhase.Result
     }
 
     private fun clearAll() {
-        pendingCalculation = null
+        phase = CalculationPhase.EnteringFirstOperand
         mutableUiState.value = CalculatorUiState()
+    }
+
+    private fun clearEntry() {
+        when (val currentPhase = phase) {
+            is CalculationPhase.EnteringSecondOperand -> {
+                phase = CalculationPhase.OperationPending(currentPhase.calculation)
+                mutableUiState.value = mutableUiState.value.copy(primaryValue = "0")
+            }
+            is CalculationPhase.OperationPending -> Unit
+            CalculationPhase.EnteringFirstOperand,
+            CalculationPhase.Result,
+            -> clearAll()
+        }
     }
 
     private fun Double.toDisplayText(): String =
@@ -74,4 +111,11 @@ class CalculatorViewModel : ViewModel() {
         val operandText: String,
         val operation: BinaryOperation,
     )
+
+    private sealed interface CalculationPhase {
+        data object EnteringFirstOperand : CalculationPhase
+        data class OperationPending(val calculation: PendingCalculation) : CalculationPhase
+        data class EnteringSecondOperand(val calculation: PendingCalculation) : CalculationPhase
+        data object Result : CalculationPhase
+    }
 }

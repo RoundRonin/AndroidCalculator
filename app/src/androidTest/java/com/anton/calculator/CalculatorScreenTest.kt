@@ -77,6 +77,24 @@ class CalculatorScreenTest {
     }
 
     @Test
+    fun clearEntryButtonEmitsClearEntryAction() {
+        val actions = mutableListOf<CalculatorAction>()
+        composeRule.setContent {
+            CalculatorScreen(
+                state = CalculatorUiState(
+                    primaryValue = "3",
+                    secondaryExpression = "12 +",
+                ),
+                onAction = actions::add,
+            )
+        }
+
+        composeRule.onNodeWithText("CE").performClick()
+
+        assertEquals(listOf(CalculatorAction.ClearEntry), actions)
+    }
+
+    @Test
     fun operationAndEqualsButtonsEmitTheirActions() {
         val actions = mutableListOf<CalculatorAction>()
         composeRule.setContent {

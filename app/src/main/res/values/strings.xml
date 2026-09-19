@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Calculator</string>
     <string name="clear_all_label">C</string>
+    <string name="clear_entry_label">CE</string>
 </resources>

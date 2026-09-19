@@ -9,6 +9,7 @@ sealed interface CalculatorAction {
 
     data class SelectOperation(val operation: BinaryOperation) : CalculatorAction
     data object Equals : CalculatorAction
+    data object ClearEntry : CalculatorAction
     data object ClearAll : CalculatorAction
 }
 

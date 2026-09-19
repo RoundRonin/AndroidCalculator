@@ -88,6 +88,12 @@ private fun Keypad(onAction: (CalculatorAction) -> Unit) {
                             contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                             onClick = { onAction(CalculatorAction.ClearAll) },
                         )
+                        KeypadCell.ClearEntry -> CalculatorKey(
+                            label = stringResource(R.string.clear_entry_label),
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                            onClick = { onAction(CalculatorAction.ClearEntry) },
+                        )
                         is KeypadCell.Operation -> CalculatorKey(
                             label = cell.operation.symbol,
                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -135,6 +141,7 @@ private sealed interface KeypadCell {
     data class Digit(val value: Int) : KeypadCell
     data class Operation(val operation: BinaryOperation) : KeypadCell
     data object ClearAll : KeypadCell
+    data object ClearEntry : KeypadCell
     data object Equals : KeypadCell
     data object Empty : KeypadCell
 }
@@ -142,7 +149,7 @@ private sealed interface KeypadCell {
 private val keypadRows = listOf(
     listOf(
         KeypadCell.ClearAll,
-        KeypadCell.Empty,
+        KeypadCell.ClearEntry,
         KeypadCell.Empty,
         KeypadCell.Operation(BinaryOperation.Divide),
     ),

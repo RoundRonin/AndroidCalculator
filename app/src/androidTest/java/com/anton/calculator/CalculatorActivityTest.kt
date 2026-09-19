@@ -14,7 +14,7 @@ class CalculatorActivityTest {
     val composeRule = createAndroidComposeRule<MainActivity>()
 
     @Test
-    fun userCalculatesTwelvePlusThree() {
+    fun userChainsTwelvePlusThreeThenMultipliesByTwo() {
         composeRule.onNodeWithText("1").performClick()
         composeRule.onNodeWithText("2").performClick()
         composeRule.onNodeWithText("+").performClick()
@@ -23,5 +23,25 @@ class CalculatorActivityTest {
 
         composeRule.onNodeWithText("12 + 3 =").assertIsDisplayed()
         composeRule.onNodeWithText("15").assertIsDisplayed()
+
+        composeRule.onNodeWithText("×").performClick()
+        composeRule.onNodeWithText("2").performClick()
+        composeRule.onNodeWithText("=").performClick()
+
+        composeRule.onNodeWithText("15 × 2 =").assertIsDisplayed()
+        composeRule.onNodeWithText("30").assertIsDisplayed()
+    }
+
+    @Test
+    fun userReplacesAdditionWithMultiplication() {
+        composeRule.onNodeWithText("1").performClick()
+        composeRule.onNodeWithText("2").performClick()
+        composeRule.onNodeWithText("+").performClick()
+        composeRule.onNodeWithText("×").performClick()
+        composeRule.onNodeWithText("3").performClick()
+        composeRule.onNodeWithText("=").performClick()
+
+        composeRule.onNodeWithText("12 × 3 =").assertIsDisplayed()
+        composeRule.onNodeWithText("36").assertIsDisplayed()
     }
 }
