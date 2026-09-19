@@ -1,0 +1,15 @@
+# Android Studio and Gradle
+.gradle/
+.idea/
+*.iml
+/local.properties
+**/build/
+/captures/
+.externalNativeBuild/
+.cxx/
+
+# Local operating-system files
+.DS_Store
+
+# Local planning and working notes
+/.scratch/
