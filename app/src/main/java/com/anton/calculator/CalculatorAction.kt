@@ -7,5 +7,14 @@ sealed interface CalculatorAction {
         }
     }
 
+    data class SelectOperation(val operation: BinaryOperation) : CalculatorAction
+    data object Equals : CalculatorAction
     data object ClearAll : CalculatorAction
+}
+
+enum class BinaryOperation(val symbol: String) {
+    Add("+"),
+    Subtract("−"),
+    Multiply("×"),
+    Divide("÷"),
 }

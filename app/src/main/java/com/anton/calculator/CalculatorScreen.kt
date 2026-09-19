@@ -88,6 +88,20 @@ private fun Keypad(onAction: (CalculatorAction) -> Unit) {
                             contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                             onClick = { onAction(CalculatorAction.ClearAll) },
                         )
+                        is KeypadCell.Operation -> CalculatorKey(
+                            label = cell.operation.symbol,
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            onClick = {
+                                onAction(CalculatorAction.SelectOperation(cell.operation))
+                            },
+                        )
+                        KeypadCell.Equals -> CalculatorKey(
+                            label = "=",
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                            onClick = { onAction(CalculatorAction.Equals) },
+                        )
                         KeypadCell.Empty -> Spacer(modifier = Modifier.weight(1f))
                     }
                 }
@@ -119,33 +133,41 @@ private fun RowScope.CalculatorKey(
 
 private sealed interface KeypadCell {
     data class Digit(val value: Int) : KeypadCell
+    data class Operation(val operation: BinaryOperation) : KeypadCell
     data object ClearAll : KeypadCell
+    data object Equals : KeypadCell
     data object Empty : KeypadCell
 }
 
 private val keypadRows = listOf(
     listOf(
+        KeypadCell.ClearAll,
+        KeypadCell.Empty,
+        KeypadCell.Empty,
+        KeypadCell.Operation(BinaryOperation.Divide),
+    ),
+    listOf(
         KeypadCell.Digit(7),
         KeypadCell.Digit(8),
         KeypadCell.Digit(9),
-        KeypadCell.ClearAll,
+        KeypadCell.Operation(BinaryOperation.Multiply),
     ),
     listOf(
         KeypadCell.Digit(4),
         KeypadCell.Digit(5),
         KeypadCell.Digit(6),
-        KeypadCell.Empty,
+        KeypadCell.Operation(BinaryOperation.Subtract),
     ),
     listOf(
         KeypadCell.Digit(1),
         KeypadCell.Digit(2),
         KeypadCell.Digit(3),
-        KeypadCell.Empty,
+        KeypadCell.Operation(BinaryOperation.Add),
     ),
     listOf(
         KeypadCell.Empty,
         KeypadCell.Digit(0),
         KeypadCell.Empty,
-        KeypadCell.Empty,
+        KeypadCell.Equals,
     ),
 )

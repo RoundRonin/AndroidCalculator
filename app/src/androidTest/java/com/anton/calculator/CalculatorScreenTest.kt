@@ -75,4 +75,62 @@ class CalculatorScreenTest {
 
         assertEquals(listOf(CalculatorAction.ClearAll), actions)
     }
+
+    @Test
+    fun operationAndEqualsButtonsEmitTheirActions() {
+        val actions = mutableListOf<CalculatorAction>()
+        composeRule.setContent {
+            CalculatorScreen(
+                state = CalculatorUiState(),
+                onAction = actions::add,
+            )
+        }
+
+        listOf("+", "−", "×", "÷", "=").forEach { label ->
+            composeRule.onNodeWithText(label).performClick()
+        }
+
+        assertEquals(
+            listOf(
+                CalculatorAction.SelectOperation(BinaryOperation.Add),
+                CalculatorAction.SelectOperation(BinaryOperation.Subtract),
+                CalculatorAction.SelectOperation(BinaryOperation.Multiply),
+                CalculatorAction.SelectOperation(BinaryOperation.Divide),
+                CalculatorAction.Equals,
+            ),
+            actions,
+        )
+    }
+
+    @Test
+    fun pendingCalculationRendersBothDisplayLines() {
+        composeRule.setContent {
+            CalculatorScreen(
+                state = CalculatorUiState(
+                    primaryValue = "3",
+                    secondaryExpression = "12 +",
+                ),
+                onAction = {},
+            )
+        }
+
+        composeRule.onNodeWithText("12 +").assertIsDisplayed()
+        composeRule.onNodeWithText("3").assertIsDisplayed()
+    }
+
+    @Test
+    fun completedCalculationRendersExpressionAndResult() {
+        composeRule.setContent {
+            CalculatorScreen(
+                state = CalculatorUiState(
+                    primaryValue = "15",
+                    secondaryExpression = "12 + 3 =",
+                ),
+                onAction = {},
+            )
+        }
+
+        composeRule.onNodeWithText("12 + 3 =").assertIsDisplayed()
+        composeRule.onNodeWithText("15").assertIsDisplayed()
+    }
 }
