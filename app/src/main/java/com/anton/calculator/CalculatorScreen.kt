@@ -12,6 +12,9 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.text.selection.SelectionState
+import androidx.compose.foundation.text.selection.rememberSelectionState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -22,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
@@ -30,6 +34,7 @@ fun CalculatorScreen(
     state: CalculatorUiState,
     onAction: (CalculatorAction) -> Unit,
     modifier: Modifier = Modifier,
+    primarySelectionState: SelectionState = rememberSelectionState(),
 ) {
     Surface(modifier = modifier.fillMaxSize()) {
         Column(
@@ -49,16 +54,20 @@ fun CalculatorScreen(
                 if (state.secondaryExpression.isNotEmpty()) {
                     Text(
                         text = state.secondaryExpression,
+                        modifier = Modifier.testTag(SECONDARY_DISPLAY_TAG),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.titleMedium,
                         textAlign = TextAlign.End,
                     )
                 }
-                Text(
-                    text = state.primaryValue,
-                    style = MaterialTheme.typography.displayLarge,
-                    textAlign = TextAlign.End,
-                )
+                SelectionContainer(state = primarySelectionState) {
+                    Text(
+                        text = state.primaryValue,
+                        modifier = Modifier.testTag(PRIMARY_DISPLAY_TAG),
+                        style = MaterialTheme.typography.displayLarge,
+                        textAlign = TextAlign.End,
+                    )
+                }
             }
 
             Keypad(
@@ -191,3 +200,6 @@ private val keypadRows = listOf(
         KeypadCell.Equals,
     ),
 )
+
+internal const val PRIMARY_DISPLAY_TAG = "primaryDisplay"
+internal const val SECONDARY_DISPLAY_TAG = "secondaryDisplay"

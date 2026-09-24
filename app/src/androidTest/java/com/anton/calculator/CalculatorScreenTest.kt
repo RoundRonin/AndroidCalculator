@@ -2,6 +2,7 @@
 
 package com.anton.calculator
 
+import androidx.compose.foundation.text.selection.SelectionState
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -15,6 +16,28 @@ import org.junit.Test
 class CalculatorScreenTest {
     @get:Rule
     val composeRule = createComposeRule()
+
+    @Test
+    fun onlyThePrimaryDisplayParticipatesInSystemTextSelection() {
+        val selectionState = SelectionState()
+        composeRule.setContent {
+            CalculatorScreen(
+                state = CalculatorUiState(
+                    primaryValue = "15",
+                    secondaryExpression = "12 + 3 =",
+                ),
+                onAction = {},
+                primarySelectionState = selectionState,
+            )
+        }
+
+        composeRule.runOnIdle {
+            assertEquals(
+                listOf("15"),
+                selectionState.getSelectableTexts().map { text -> text.text },
+            )
+        }
+    }
 
     @Test
     fun initialStateShowsZeroAndTheWholeNumberKeypad() {

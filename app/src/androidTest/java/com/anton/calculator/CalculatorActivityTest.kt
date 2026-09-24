@@ -5,6 +5,7 @@ package com.anton.calculator
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import org.junit.Rule
 import org.junit.Test
@@ -12,6 +13,22 @@ import org.junit.Test
 class CalculatorActivityTest {
     @get:Rule
     val composeRule = createAndroidComposeRule<MainActivity>()
+
+    @Test
+    fun partialCalculationSurvivesActivityRecreationAndCanBeCompleted() {
+        composeRule.onNodeWithText("1").performClick()
+        composeRule.onNodeWithText("2").performClick()
+        composeRule.onNodeWithText("+").performClick()
+        composeRule.onNodeWithText("3").performClick()
+
+        composeRule.activityRule.scenario.recreate()
+
+        composeRule.onNodeWithText("12 +").assertIsDisplayed()
+        composeRule.onNodeWithTag(PRIMARY_DISPLAY_TAG).assertIsDisplayed()
+        composeRule.onNodeWithText("=").performClick()
+        composeRule.onNodeWithText("12 + 3 =").assertIsDisplayed()
+        composeRule.onNodeWithText("15").assertIsDisplayed()
+    }
 
     @Test
     fun userChainsTwelvePlusThreeThenMultipliesByTwo() {
