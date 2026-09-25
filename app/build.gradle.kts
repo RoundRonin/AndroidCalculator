@@ -33,6 +33,10 @@ android {
     buildFeatures {
         compose = true
     }
+    lint {
+        // AGP 9.4.1 officially defaults to Gradle 9.6 and built-in Kotlin 2.2.10.
+        disable += setOf("AndroidGradlePluginVersion", "NewerVersionAvailable")
+    }
 }
 
 dependencies {
@@ -52,6 +56,7 @@ dependencies {
 
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4.accessibility)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
 

@@ -2,4 +2,14 @@
     <string name="app_name">Calculator</string>
     <string name="clear_all_label">C</string>
     <string name="clear_entry_label">CE</string>
+    <string name="add_description">Add</string>
+    <string name="subtract_description">Subtract</string>
+    <string name="multiply_description">Multiply</string>
+    <string name="divide_description">Divide</string>
+    <string name="equals_description">Equals</string>
+    <string name="decimal_description">Decimal separator %1$s</string>
+    <string name="clear_all_description">Clear all</string>
+    <string name="clear_entry_description">Clear entry</string>
+    <string name="calculation_error_description">Calculation error</string>
+    <string name="result_description">Result: %1$s</string>
 </resources>

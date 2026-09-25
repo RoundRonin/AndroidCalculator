@@ -2,6 +2,7 @@ package com.anton.calculator
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -45,6 +46,14 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -112,6 +121,7 @@ private fun PortraitCalculator(
         )
         Keypad(
             decimalSeparator = state.decimalSeparator,
+            selectedOperation = state.selectedOperation,
             onAction = onAction,
             keyShape = CircleShape,
             squareKeys = true,
@@ -143,6 +153,7 @@ private fun LandscapeCalculator(
         )
         Keypad(
             decimalSeparator = state.decimalSeparator,
+            selectedOperation = state.selectedOperation,
             onAction = onAction,
             keyShape = RoundedCornerShape(percent = 50),
             squareKeys = false,
@@ -159,8 +170,12 @@ private fun CalculatorDisplay(
     primarySelectionState: SelectionState,
     modifier: Modifier = Modifier,
 ) {
+    val errorDescription = stringResource(R.string.calculation_error_description)
+    val resultDescription = stringResource(R.string.result_description, state.primaryValue)
     Column(
-        modifier = modifier.testTag(DISPLAY_REGION_TAG),
+        modifier = modifier
+            .testTag(DISPLAY_REGION_TAG)
+            .semantics { isTraversalGroup = true },
         horizontalAlignment = Alignment.End,
         verticalArrangement = Arrangement.Bottom,
     ) {
@@ -169,7 +184,8 @@ private fun CalculatorDisplay(
                 text = state.secondaryExpression,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .testTag(SECONDARY_DISPLAY_TAG),
+                    .testTag(SECONDARY_DISPLAY_TAG)
+                    .semantics { traversalIndex = 0f },
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.titleMedium,
                 autoSize = TextAutoSize.StepBased(
@@ -190,7 +206,22 @@ private fun CalculatorDisplay(
                 text = state.primaryValue,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .testTag(PRIMARY_DISPLAY_TAG),
+                    .testTag(PRIMARY_DISPLAY_TAG)
+                    .semantics {
+                        traversalIndex = 1f
+                        when (state.displayStatus) {
+                            CalculatorDisplayStatus.Result -> {
+                                contentDescription = resultDescription
+                                liveRegion = LiveRegionMode.Polite
+                            }
+                            CalculatorDisplayStatus.Error -> {
+                                contentDescription = errorDescription
+                                error(errorDescription)
+                                liveRegion = LiveRegionMode.Polite
+                            }
+                            CalculatorDisplayStatus.Editing -> Unit
+                        }
+                    },
                 style = MaterialTheme.typography.displayLarge,
                 autoSize = TextAutoSize.StepBased(
                     minFontSize = 18.sp,
@@ -207,6 +238,7 @@ private fun CalculatorDisplay(
 @Composable
 private fun Keypad(
     decimalSeparator: Char,
+    selectedOperation: BinaryOperation?,
     onAction: (CalculatorAction) -> Unit,
     keyShape: Shape,
     squareKeys: Boolean,
@@ -220,6 +252,7 @@ private fun Keypad(
             KeypadRow(
                 cells = cells,
                 decimalSeparator = decimalSeparator,
+                selectedOperation = selectedOperation,
                 onAction = onAction,
                 keyShape = keyShape,
                 squareKeys = squareKeys,
@@ -232,6 +265,7 @@ private fun Keypad(
 private fun ColumnScope.KeypadRow(
     cells: List<KeypadCell>,
     decimalSeparator: Char,
+    selectedOperation: BinaryOperation?,
     onAction: (CalculatorAction) -> Unit,
     keyShape: Shape,
     squareKeys: Boolean,
@@ -267,6 +301,10 @@ private fun ColumnScope.KeypadRow(
                 )
                 KeypadCell.Decimal -> CalculatorKey(
                     label = decimalSeparator.toString(),
+                    contentDescription = stringResource(
+                        R.string.decimal_description,
+                        decimalSeparator,
+                    ),
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     contentColor = MaterialTheme.colorScheme.onSurface,
                     shape = keyShape,
@@ -275,6 +313,7 @@ private fun ColumnScope.KeypadRow(
                 )
                 KeypadCell.ClearAll -> CalculatorKey(
                     label = stringResource(R.string.clear_all_label),
+                    contentDescription = stringResource(R.string.clear_all_description),
                     containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                     contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                     shape = keyShape,
@@ -283,6 +322,7 @@ private fun ColumnScope.KeypadRow(
                 )
                 KeypadCell.ClearEntry -> CalculatorKey(
                     label = stringResource(R.string.clear_entry_label),
+                    contentDescription = stringResource(R.string.clear_entry_description),
                     containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                     contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                     shape = keyShape,
@@ -291,6 +331,8 @@ private fun ColumnScope.KeypadRow(
                 )
                 is KeypadCell.Operation -> CalculatorKey(
                     label = cell.operation.symbol,
+                    contentDescription = stringResource(cell.operation.descriptionResource),
+                    selected = cell.operation == selectedOperation,
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                     shape = keyShape,
@@ -301,6 +343,7 @@ private fun ColumnScope.KeypadRow(
                 )
                 KeypadCell.Equals -> CalculatorKey(
                     label = "=",
+                    contentDescription = stringResource(R.string.equals_description),
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                     shape = keyShape,
@@ -316,6 +359,8 @@ private fun ColumnScope.KeypadRow(
 @Composable
 private fun RowScope.CalculatorKey(
     label: String,
+    contentDescription: String? = null,
+    selected: Boolean? = null,
     containerColor: Color,
     contentColor: Color,
     shape: Shape,
@@ -337,6 +382,12 @@ private fun RowScope.CalculatorKey(
         },
         modifier = modifier
             .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
+            .semantics {
+                contentDescription?.let { description ->
+                    this.contentDescription = description
+                }
+                selected?.let { isSelected -> this.selected = isSelected }
+            }
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
@@ -348,6 +399,9 @@ private fun RowScope.CalculatorKey(
         ),
         interactionSource = interactionSource,
         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+        border = selected
+            ?.takeIf { it }
+            ?.let { BorderStroke(width = 2.dp, color = contentColor) },
     ) {
         Text(
             text = label,
@@ -404,6 +458,14 @@ private val keypadRows = listOf(
         KeypadCell.Equals,
     ),
 )
+
+private val BinaryOperation.descriptionResource: Int
+    get() = when (this) {
+        BinaryOperation.Add -> R.string.add_description
+        BinaryOperation.Subtract -> R.string.subtract_description
+        BinaryOperation.Multiply -> R.string.multiply_description
+        BinaryOperation.Divide -> R.string.divide_description
+    }
 
 internal const val PRIMARY_DISPLAY_TAG = "primaryDisplay"
 internal const val SECONDARY_DISPLAY_TAG = "secondaryDisplay"

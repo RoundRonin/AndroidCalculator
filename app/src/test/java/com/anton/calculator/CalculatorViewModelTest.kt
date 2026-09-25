@@ -1,5 +1,6 @@
 package com.anton.calculator
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.testing.viewModelScenario
 import org.junit.Assert.assertEquals
@@ -9,6 +10,29 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class CalculatorViewModelTest {
+    @Test
+    fun `unusual repeated input remains safe and recoverable`() {
+        val viewModel = calculatorViewModel()
+        val unusualSequence = listOf(
+            CalculatorAction.Decimal,
+            CalculatorAction.Decimal,
+            CalculatorAction.Equals,
+            CalculatorAction.SelectOperation(BinaryOperation.Divide),
+            CalculatorAction.SelectOperation(BinaryOperation.Multiply),
+            CalculatorAction.ClearEntry,
+            CalculatorAction.Digit(0),
+            CalculatorAction.Equals,
+            CalculatorAction.SelectOperation(BinaryOperation.Add),
+            CalculatorAction.Equals,
+        )
+
+        repeat(100) { unusualSequence.forEach(viewModel::onAction) }
+        viewModel.onAction(CalculatorAction.ClearAll)
+        viewModel.onAction(CalculatorAction.Digit(9))
+
+        assertEquals(CalculatorUiState(primaryValue = "9"), viewModel.uiState.value)
+    }
+
     @Test
     fun `partial calculation survives view model recreation and remains continuable`() {
         viewModelScenario {
@@ -70,7 +94,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `decimal starts an operand with the configured separator`() {
-        val viewModel = CalculatorViewModel(decimalSeparator = ',')
+        val viewModel = calculatorViewModel(',')
 
         viewModel.onAction(CalculatorAction.Decimal)
 
@@ -80,7 +104,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `an operand accepts only one decimal separator`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
 
         viewModel.onAction(CalculatorAction.Digit(1))
         viewModel.onAction(CalculatorAction.Decimal)
@@ -92,7 +116,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `decimal starts the second operand without changing the pending operation`() {
-        val viewModel = CalculatorViewModel(decimalSeparator = ',')
+        val viewModel = calculatorViewModel(',')
         viewModel.onAction(CalculatorAction.Digit(4))
         viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Add))
 
@@ -107,7 +131,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `manual input stops after fifteen significant digits`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
 
         "1234567890123456".forEach { character ->
             viewModel.onAction(CalculatorAction.Digit(character.digitToInt()))
@@ -118,7 +142,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `synthesized zero does not consume the decimal input limit`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
         viewModel.onAction(CalculatorAction.Decimal)
 
         "1234567890123456".forEach { character ->
@@ -130,7 +154,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `fractional leading zeroes do not consume the significant digit limit`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
         viewModel.onAction(CalculatorAction.Decimal)
         repeat(10) { viewModel.onAction(CalculatorAction.Digit(0)) }
 
@@ -142,8 +166,18 @@ class CalculatorViewModelTest {
     }
 
     @Test
+    fun `fractional leading zeroes cannot grow the entry without bound`() {
+        val viewModel = calculatorViewModel()
+        viewModel.onAction(CalculatorAction.Decimal)
+
+        repeat(100) { viewModel.onAction(CalculatorAction.Digit(0)) }
+
+        assertEquals(32, viewModel.uiState.value.primaryValue.length)
+    }
+
+    @Test
     fun `completed results hide familiar floating point noise`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
         viewModel.onAction(CalculatorAction.Decimal)
         viewModel.onAction(CalculatorAction.Digit(1))
         viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Add))
@@ -157,7 +191,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `chaining preserves the exact result behind rounded display text`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
         viewModel.onAction(CalculatorAction.Digit(1))
         viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Divide))
         viewModel.onAction(CalculatorAction.Digit(3))
@@ -173,7 +207,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `large results use scientific notation only beyond the plain display threshold`() {
-        val plain = CalculatorViewModel()
+        val plain = calculatorViewModel()
         "100000000000".forEach { character ->
             plain.onAction(CalculatorAction.Digit(character.digitToInt()))
         }
@@ -182,7 +216,7 @@ class CalculatorViewModelTest {
         plain.onAction(CalculatorAction.Equals)
         assertEquals("100000000000", plain.uiState.value.primaryValue)
 
-        val scientific = CalculatorViewModel()
+        val scientific = calculatorViewModel()
         "1000000000000".forEach { character ->
             scientific.onAction(CalculatorAction.Digit(character.digitToInt()))
         }
@@ -203,7 +237,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `division by zero produces an explicit error state`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
         viewModel.onAction(CalculatorAction.Digit(1))
         viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Divide))
         viewModel.onAction(CalculatorAction.Digit(0))
@@ -217,7 +251,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `invalid intermediate calculation enters error without crashing`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
         viewModel.enter("1")
         viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Divide))
         viewModel.enter("0")
@@ -238,7 +272,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `overflow becomes an error rather than infinity`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
         viewModel.enter("999999999999999")
 
         repeat(24) {
@@ -338,7 +372,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `calculator starts at zero with no expression`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
 
         assertEquals(
             CalculatorUiState(primaryValue = "0", secondaryExpression = ""),
@@ -348,7 +382,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `digit actions build a whole number`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
 
         viewModel.onAction(CalculatorAction.Digit(1))
         viewModel.onAction(CalculatorAction.Digit(2))
@@ -359,7 +393,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `redundant leading zeroes stay normalized`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
 
         viewModel.onAction(CalculatorAction.Digit(0))
         viewModel.onAction(CalculatorAction.Digit(0))
@@ -370,7 +404,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `clear all restores the initial display`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
         viewModel.onAction(CalculatorAction.Digit(4))
         viewModel.onAction(CalculatorAction.Digit(2))
 
@@ -381,14 +415,18 @@ class CalculatorViewModelTest {
 
     @Test
     fun `addition shows the pending expression and completed result`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
 
         viewModel.onAction(CalculatorAction.Digit(1))
         viewModel.onAction(CalculatorAction.Digit(2))
         viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Add))
 
         assertEquals(
-            CalculatorUiState(primaryValue = "0", secondaryExpression = "12 +"),
+            CalculatorUiState(
+                primaryValue = "0",
+                secondaryExpression = "12 +",
+                selectedOperation = BinaryOperation.Add,
+            ),
             viewModel.uiState.value,
         )
 
@@ -407,7 +445,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `subtraction can produce a negative result`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
 
         viewModel.onAction(CalculatorAction.Digit(3))
         viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Subtract))
@@ -426,7 +464,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `multiplication produces the product`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
 
         viewModel.onAction(CalculatorAction.Digit(6))
         viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Multiply))
@@ -439,7 +477,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `division produces an ordinary finite quotient`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
 
         viewModel.onAction(CalculatorAction.Digit(7))
         viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Divide))
@@ -452,7 +490,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `selecting another operation before a second operand replaces it`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
 
         viewModel.onAction(CalculatorAction.Digit(1))
         viewModel.onAction(CalculatorAction.Digit(2))
@@ -460,14 +498,18 @@ class CalculatorViewModelTest {
         viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Multiply))
 
         assertEquals(
-            CalculatorUiState(primaryValue = "0", secondaryExpression = "12 ×"),
+            CalculatorUiState(
+                primaryValue = "0",
+                secondaryExpression = "12 ×",
+                selectedOperation = BinaryOperation.Multiply,
+            ),
             viewModel.uiState.value,
         )
     }
 
     @Test
     fun `selecting an operation after a second operand chains from the intermediate result`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
 
         viewModel.onAction(CalculatorAction.Digit(1))
         viewModel.onAction(CalculatorAction.Digit(2))
@@ -476,7 +518,11 @@ class CalculatorViewModelTest {
         viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Multiply))
 
         assertEquals(
-            CalculatorUiState(primaryValue = "0", secondaryExpression = "15 ×"),
+            CalculatorUiState(
+                primaryValue = "0",
+                secondaryExpression = "15 ×",
+                selectedOperation = BinaryOperation.Multiply,
+            ),
             viewModel.uiState.value,
         )
 
@@ -495,7 +541,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `equals leaves an incomplete calculation unchanged`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
         viewModel.onAction(CalculatorAction.Digit(9))
         viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Subtract))
         val pendingState = viewModel.uiState.value
@@ -507,7 +553,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `digit after a result starts a new calculation`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
         viewModel.onAction(CalculatorAction.Digit(1))
         viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Add))
         viewModel.onAction(CalculatorAction.Digit(2))
@@ -520,7 +566,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `clear entry clears the second operand but preserves the pending calculation`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
         viewModel.onAction(CalculatorAction.Digit(1))
         viewModel.onAction(CalculatorAction.Digit(2))
         viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Add))
@@ -529,14 +575,18 @@ class CalculatorViewModelTest {
         viewModel.onAction(CalculatorAction.ClearEntry)
 
         assertEquals(
-            CalculatorUiState(primaryValue = "0", secondaryExpression = "12 +"),
+            CalculatorUiState(
+                primaryValue = "0",
+                secondaryExpression = "12 +",
+                selectedOperation = BinaryOperation.Add,
+            ),
             viewModel.uiState.value,
         )
     }
 
     @Test
     fun `clear entry before second operand input leaves the calculation unchanged`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
         viewModel.onAction(CalculatorAction.Digit(8))
         viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Divide))
         val pendingState = viewModel.uiState.value
@@ -548,7 +598,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `equals after clear entry leaves the pending calculation unchanged`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
         viewModel.onAction(CalculatorAction.Digit(8))
         viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Divide))
         viewModel.onAction(CalculatorAction.Digit(2))
@@ -562,7 +612,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `clear entry after a result restores the initial state`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
         viewModel.onAction(CalculatorAction.Digit(4))
         viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Multiply))
         viewModel.onAction(CalculatorAction.Digit(5))
@@ -575,7 +625,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `operator after a result continues from that result`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
         viewModel.onAction(CalculatorAction.Digit(1))
         viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Add))
         viewModel.onAction(CalculatorAction.Digit(2))
@@ -584,14 +634,18 @@ class CalculatorViewModelTest {
         viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Multiply))
 
         assertEquals(
-            CalculatorUiState(primaryValue = "0", secondaryExpression = "3 ×"),
+            CalculatorUiState(
+                primaryValue = "0",
+                secondaryExpression = "3 ×",
+                selectedOperation = BinaryOperation.Multiply,
+            ),
             viewModel.uiState.value,
         )
     }
 
     @Test
     fun `repeated equals leaves a completed result unchanged`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
         viewModel.onAction(CalculatorAction.Digit(4))
         viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Add))
         viewModel.onAction(CalculatorAction.Digit(5))
@@ -606,7 +660,7 @@ class CalculatorViewModelTest {
 
     @Test
     fun `clear all resets partial chained and completed calculations`() {
-        val viewModel = CalculatorViewModel()
+        val viewModel = calculatorViewModel()
 
         viewModel.onAction(CalculatorAction.Digit(9))
         viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Subtract))
@@ -633,7 +687,7 @@ class CalculatorViewModelTest {
         operation: BinaryOperation,
         right: String,
         decimalSeparator: Char = '.',
-    ): CalculatorViewModel = CalculatorViewModel(decimalSeparator).apply {
+    ): CalculatorViewModel = calculatorViewModel(decimalSeparator).apply {
         enter(left)
         onAction(CalculatorAction.SelectOperation(operation))
         enter(right)
@@ -653,3 +707,6 @@ class CalculatorViewModelTest {
         }
     }
 }
+
+private fun calculatorViewModel(decimalSeparator: Char = '.'): CalculatorViewModel =
+    CalculatorViewModel(SavedStateHandle(), decimalSeparator)

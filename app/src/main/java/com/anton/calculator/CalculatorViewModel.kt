@@ -19,11 +19,6 @@ class CalculatorViewModel(
         configuredDecimalSeparator = DecimalFormatSymbols.getInstance().decimalSeparator,
     )
 
-    constructor(decimalSeparator: Char = DecimalFormatSymbols.getInstance().decimalSeparator) : this(
-        savedStateHandle = SavedStateHandle(),
-        configuredDecimalSeparator = decimalSeparator,
-    )
-
     private val decimalSeparator = savedStateHandle.get<String>(DECIMAL_SEPARATOR_KEY)
         ?.singleOrNull()
         ?: configuredDecimalSeparator
@@ -63,6 +58,7 @@ class CalculatorViewModel(
         prepareForInput()
         val currentValue = mutableUiState.value.primaryValue
         val nextValue = if (currentValue == "0") digit.toString() else currentValue + digit
+        if (nextValue.length > MAX_INPUT_CHARACTERS) return
         if (nextValue.significantDigitCount() > MAX_INPUT_DIGITS) return
         mutableUiState.value = mutableUiState.value.copy(primaryValue = nextValue)
     }
@@ -75,6 +71,7 @@ class CalculatorViewModel(
                 phase = CalculationPhase.OperationPending(replacement)
                 mutableUiState.value = mutableUiState.value.copy(
                     secondaryExpression = "${replacement.operandText} ${operation.symbol}",
+                    selectedOperation = operation,
                 )
                 return
             }
@@ -96,6 +93,7 @@ class CalculatorViewModel(
         mutableUiState.value = initialUiState().copy(
             primaryValue = "0",
             secondaryExpression = "$operandText ${operation.symbol}",
+            selectedOperation = operation,
         )
     }
 
@@ -168,6 +166,11 @@ class CalculatorViewModel(
                 secondaryExpression = savedStateHandle[SECONDARY_EXPRESSION_KEY] ?: "",
                 decimalSeparator = decimalSeparator,
                 displayStatus = displayStatus,
+                selectedOperation = when (restoredPhase) {
+                    is CalculationPhase.OperationPending -> restoredPhase.calculation.operation
+                    is CalculationPhase.EnteringSecondOperand -> restoredPhase.calculation.operation
+                    else -> null
+                },
             ),
             phase = restoredPhase,
         )
@@ -275,6 +278,7 @@ class CalculatorViewModel(
 
     private companion object {
         const val MAX_INPUT_DIGITS = 15
+        const val MAX_INPUT_CHARACTERS = 32
         const val RESULT_SIGNIFICANT_DIGITS = 12
         const val MAX_PLAIN_RESULT_CHARACTERS = 16
         const val PRIMARY_VALUE_KEY = "primaryValue"

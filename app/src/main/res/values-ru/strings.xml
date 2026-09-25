@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Калькулятор</string>
+    <string name="clear_all_label">C</string>
+    <string name="clear_entry_label">CE</string>
+    <string name="add_description">Сложить</string>
+    <string name="subtract_description">Вычесть</string>
+    <string name="multiply_description">Умножить</string>
+    <string name="divide_description">Разделить</string>
+    <string name="equals_description">Равно</string>
+    <string name="decimal_description">Десятичный разделитель %1$s</string>
+    <string name="clear_all_description">Очистить всё</string>
+    <string name="clear_entry_description">Очистить текущее число</string>
+    <string name="calculation_error_description">Ошибка вычисления</string>
+    <string name="result_description">Результат: %1$s</string>
+</resources>

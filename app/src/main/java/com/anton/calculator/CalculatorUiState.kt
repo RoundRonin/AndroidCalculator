@@ -5,6 +5,7 @@ data class CalculatorUiState(
     val secondaryExpression: String = "",
     val decimalSeparator: Char = '.',
     val displayStatus: CalculatorDisplayStatus = CalculatorDisplayStatus.Editing,
+    val selectedOperation: BinaryOperation? = null,
 )
 
 enum class CalculatorDisplayStatus {
