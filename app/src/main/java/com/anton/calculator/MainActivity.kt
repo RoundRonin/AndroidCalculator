@@ -4,9 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.getValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.anton.calculator.ui.CalculatorRoute
+import com.anton.calculator.ui.theme.CalculatorTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -14,12 +13,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             CalculatorTheme {
-                val viewModel: CalculatorViewModel = viewModel()
-                val state by viewModel.uiState.collectAsStateWithLifecycle()
-                CalculatorScreen(
-                    state = state,
-                    onAction = viewModel::onAction,
-                )
+                CalculatorRoute()
             }
         }
     }

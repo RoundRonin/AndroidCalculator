@@ -11,6 +11,8 @@ android {
 
     defaultConfig {
         applicationId = "com.anton.calculator"
+        // Android Studio 2026.1 wizard data checked 2026-09-26: API 26 covers 98.3% of
+        // active devices, while API 27 covers 97.5%, making 26 the highest level above 98%.
         minSdk = 26
         targetSdk = 37
         versionCode = 1
@@ -36,6 +38,17 @@ android {
     lint {
         // AGP 9.4.1 officially defaults to Gradle 9.6 and built-in Kotlin 2.2.10.
         disable += setOf("AndroidGradlePluginVersion", "NewerVersionAvailable")
+    }
+    testOptions {
+        managedDevices {
+            localDevices {
+                create("pixel2Api35") {
+                    device = "Pixel 2"
+                    apiLevel = 35
+                    systemImageSource = "aosp"
+                }
+            }
+        }
     }
 }
 

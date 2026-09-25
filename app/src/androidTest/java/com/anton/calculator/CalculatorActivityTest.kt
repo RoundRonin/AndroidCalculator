@@ -3,10 +3,14 @@
 package com.anton.calculator
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import com.anton.calculator.ui.components.PRIMARY_DISPLAY_TAG
 import org.junit.Rule
 import org.junit.Test
 
@@ -16,34 +20,25 @@ class CalculatorActivityTest {
 
     @Test
     fun partialCalculationSurvivesActivityRecreationAndCanBeCompleted() {
-        composeRule.onNodeWithText("1").performClick()
-        composeRule.onNodeWithText("2").performClick()
-        composeRule.onNodeWithText("+").performClick()
-        composeRule.onNodeWithText("3").performClick()
+        press("1", "2", "+", "3")
 
         composeRule.activityRule.scenario.recreate()
 
         composeRule.onNodeWithText("12 +").assertIsDisplayed()
         composeRule.onNodeWithTag(PRIMARY_DISPLAY_TAG).assertIsDisplayed()
-        composeRule.onNodeWithText("=").performClick()
+        press("=")
         composeRule.onNodeWithText("12 + 3 =").assertIsDisplayed()
         composeRule.onNodeWithText("15").assertIsDisplayed()
     }
 
     @Test
     fun userChainsTwelvePlusThreeThenMultipliesByTwo() {
-        composeRule.onNodeWithText("1").performClick()
-        composeRule.onNodeWithText("2").performClick()
-        composeRule.onNodeWithText("+").performClick()
-        composeRule.onNodeWithText("3").performClick()
-        composeRule.onNodeWithText("=").performClick()
+        press("1", "2", "+", "3", "=")
 
         composeRule.onNodeWithText("12 + 3 =").assertIsDisplayed()
         composeRule.onNodeWithText("15").assertIsDisplayed()
 
-        composeRule.onNodeWithText("×").performClick()
-        composeRule.onNodeWithText("2").performClick()
-        composeRule.onNodeWithText("=").performClick()
+        press("×", "2", "=")
 
         composeRule.onNodeWithText("15 × 2 =").assertIsDisplayed()
         composeRule.onNodeWithText("30").assertIsDisplayed()
@@ -51,12 +46,7 @@ class CalculatorActivityTest {
 
     @Test
     fun userReplacesAdditionWithMultiplication() {
-        composeRule.onNodeWithText("1").performClick()
-        composeRule.onNodeWithText("2").performClick()
-        composeRule.onNodeWithText("+").performClick()
-        composeRule.onNodeWithText("×").performClick()
-        composeRule.onNodeWithText("3").performClick()
-        composeRule.onNodeWithText("=").performClick()
+        press("1", "2", "+", "×", "3", "=")
 
         composeRule.onNodeWithText("12 × 3 =").assertIsDisplayed()
         composeRule.onNodeWithText("36").assertIsDisplayed()
@@ -64,21 +54,20 @@ class CalculatorActivityTest {
 
     @Test
     fun userRecoversFromDivisionByZeroAndCalculatesAgain() {
-        composeRule.onNodeWithText("1").performClick()
-        composeRule.onNodeWithText("÷").performClick()
-        composeRule.onNodeWithText("0").performClick()
-        composeRule.onNodeWithText("=").performClick()
+        press("1", "÷", "0", "=")
 
         composeRule.onNodeWithText("1 ÷ 0 =").assertIsDisplayed()
         composeRule.onNodeWithText("Error").assertIsDisplayed()
 
-        composeRule.onNodeWithText("CE").performClick()
-        composeRule.onNodeWithText("6").performClick()
-        composeRule.onNodeWithText("÷").performClick()
-        composeRule.onNodeWithText("2").performClick()
-        composeRule.onNodeWithText("=").performClick()
+        press("CE", "6", "÷", "2", "=")
 
         composeRule.onNodeWithText("6 ÷ 2 =").assertIsDisplayed()
-        composeRule.onNodeWithText("3").assertIsDisplayed()
+        composeRule.onNodeWithTag(PRIMARY_DISPLAY_TAG).assertTextEquals("3")
+    }
+
+    private fun press(vararg labels: String) {
+        labels.forEach { label ->
+            composeRule.onNode(hasText(label) and hasClickAction()).performClick()
+        }
     }
 }

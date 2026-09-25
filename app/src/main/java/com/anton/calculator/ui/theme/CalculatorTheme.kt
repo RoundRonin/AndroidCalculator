@@ -1,4 +1,4 @@
-package com.anton.calculator
+package com.anton.calculator.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
