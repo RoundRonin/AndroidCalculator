@@ -1,9 +1,9 @@
 package com.anton.calculator.persistence
 
-import com.anton.calculator.domain.BinaryOperation
-import com.anton.calculator.domain.CalculationExpression
-import com.anton.calculator.domain.CalculatorState
-import com.anton.calculator.domain.PendingCalculation
+import com.anton.calculator.domain.calculation.BinaryOperation
+import com.anton.calculator.domain.calculation.state.CalculationExpression
+import com.anton.calculator.domain.calculation.state.CalculatorState
+import com.anton.calculator.domain.calculation.state.PendingCalculation
 
 import android.os.Bundle
 import androidx.lifecycle.SavedStateHandle

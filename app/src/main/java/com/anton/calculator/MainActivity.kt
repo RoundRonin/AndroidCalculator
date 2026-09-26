@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.anton.calculator.ui.CalculatorRoute
+import com.anton.calculator.ui.calculator.CalculatorRoute
 import com.anton.calculator.ui.theme.CalculatorTheme
 
 class MainActivity : ComponentActivity() {
