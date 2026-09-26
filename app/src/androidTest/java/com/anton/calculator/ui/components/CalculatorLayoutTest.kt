@@ -2,39 +2,25 @@
 
 package com.anton.calculator.ui.components
 
-import com.anton.calculator.domain.BinaryOperation
-import com.anton.calculator.domain.CalculatorAction
-import com.anton.calculator.ui.CalculatorDisplayStatus
-import com.anton.calculator.ui.CalculatorUiState
-import com.anton.calculator.ui.theme.CalculatorTheme
-
-import androidx.compose.foundation.text.selection.SelectionState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.FontScale
-import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.SemanticsProperties
-import androidx.compose.ui.test.SemanticsMatcher
-import androidx.compose.ui.test.hasClickAction
-import androidx.compose.ui.test.hasSetTextAction
-import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
-import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotSelected
-import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
-import androidx.test.platform.app.InstrumentationRegistry
+import com.anton.calculator.domain.BinaryOperation
+import com.anton.calculator.domain.CalculatorAction
+import com.anton.calculator.ui.CalculatorUiState
+import com.anton.calculator.ui.theme.CalculatorTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule

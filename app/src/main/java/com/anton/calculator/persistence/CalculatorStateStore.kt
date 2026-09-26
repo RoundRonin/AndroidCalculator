@@ -8,7 +8,7 @@ import com.anton.calculator.domain.PendingCalculation
 import android.os.Bundle
 import androidx.lifecycle.SavedStateHandle
 
-internal class ddiCalculatorStateStore(
+internal class CalculatorStateStore(
     private val savedStateHandle: SavedStateHandle,
 ) {
     fun restore(): CalculatorState = savedStateHandle.get<Bundle>(STATE_KEY)
