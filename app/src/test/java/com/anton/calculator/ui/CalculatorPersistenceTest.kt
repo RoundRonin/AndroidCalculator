@@ -27,7 +27,10 @@ class CalculatorPersistenceTest {
             assertEquals(stateBeforeRecreation, scenario.viewModel.uiState.value)
             scenario.viewModel.onAction(CalculatorAction.Equals)
             assertEquals("15", scenario.viewModel.uiState.value.primaryValue)
-            assertEquals("12 + 3 =", scenario.viewModel.uiState.value.secondaryExpression)
+            assertEquals(
+                CalculatorUiExpression("12", BinaryOperation.Add, "3"),
+                scenario.viewModel.uiState.value.expression,
+            )
         }
     }
 
@@ -71,4 +74,3 @@ class CalculatorPersistenceTest {
         }
     }
 }
-

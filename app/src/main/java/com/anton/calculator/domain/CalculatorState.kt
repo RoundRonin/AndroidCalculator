@@ -23,15 +23,3 @@ internal sealed interface CalculatorState {
         fun initial(): CalculatorState = EnteringFirstOperand()
     }
 }
-
-internal data class PendingCalculation(
-    val operand: Double,
-    val operandText: String,
-    val operation: BinaryOperation,
-)
-
-internal data class CalculationExpression(
-    val leftOperandText: String,
-    val operation: BinaryOperation,
-    val rightOperandText: String,
-)

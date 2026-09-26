@@ -13,23 +13,3 @@ internal sealed interface CalculatorAction {
     data object ClearEntry : CalculatorAction
     data object ClearAll : CalculatorAction
 }
-
-internal enum class BinaryOperation(
-    val symbol: String,
-) {
-    Add("+") {
-        override fun apply(left: Double, right: Double) = left + right
-    },
-    Subtract("−") {
-        override fun apply(left: Double, right: Double) = left - right
-    },
-    Multiply("×") {
-        override fun apply(left: Double, right: Double) = left * right
-    },
-    Divide("÷") {
-        override fun apply(left: Double, right: Double) = left / right
-    },
-    ;
-
-    abstract fun apply(left: Double, right: Double): Double
-}

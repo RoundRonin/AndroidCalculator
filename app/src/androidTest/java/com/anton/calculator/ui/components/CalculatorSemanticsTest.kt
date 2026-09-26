@@ -20,6 +20,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.anton.calculator.R
 import com.anton.calculator.domain.BinaryOperation
 import com.anton.calculator.ui.CalculatorDisplayStatus
+import com.anton.calculator.ui.CalculatorUiExpression
 import com.anton.calculator.ui.CalculatorUiState
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -56,7 +57,7 @@ class CalculatorSemanticsTest {
         composeRule.setContent {
             CalculatorScreen(
                 state = CalculatorUiState(
-                    secondaryExpression = "12 +",
+                    expression = CalculatorUiExpression("12", BinaryOperation.Add),
                     selectedOperation = BinaryOperation.Add,
                 ),
                 onAction = {},
@@ -74,8 +75,8 @@ class CalculatorSemanticsTest {
         composeRule.setContent {
             CalculatorScreen(
                 state = CalculatorUiState(
-                    primaryValue = "Error",
-                    secondaryExpression = "1 ÷ 0 =",
+                    primaryValue = null,
+                    expression = CalculatorUiExpression("1", BinaryOperation.Divide, "0"),
                     displayStatus = CalculatorDisplayStatus.Error,
                 ),
                 onAction = {},
@@ -126,7 +127,7 @@ class CalculatorSemanticsTest {
             CalculatorDisplay(
                 state = CalculatorUiState(
                     primaryValue = "15",
-                    secondaryExpression = "12 + 3 =",
+                    expression = CalculatorUiExpression("12", BinaryOperation.Add, "3"),
                 ),
                 primarySelectionState = selectionState,
             )

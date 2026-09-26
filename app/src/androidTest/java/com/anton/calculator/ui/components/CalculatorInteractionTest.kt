@@ -17,6 +17,7 @@ import androidx.compose.ui.test.performClick
 import com.anton.calculator.domain.BinaryOperation
 import com.anton.calculator.domain.CalculatorAction
 import com.anton.calculator.ui.CalculatorDisplayStatus
+import com.anton.calculator.ui.CalculatorUiExpression
 import com.anton.calculator.ui.CalculatorUiState
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -93,7 +94,7 @@ class CalculatorInteractionTest {
             CalculatorScreen(
                 state = CalculatorUiState(
                     primaryValue = "3",
-                    secondaryExpression = "12 +",
+                    expression = CalculatorUiExpression("12", BinaryOperation.Add),
                 ),
                 onAction = actions::add,
             )
@@ -151,7 +152,7 @@ class CalculatorInteractionTest {
             CalculatorScreen(
                 state = CalculatorUiState(
                     primaryValue = "3",
-                    secondaryExpression = "12 +",
+                    expression = CalculatorUiExpression("12", BinaryOperation.Add),
                 ),
                 onAction = {},
             )
@@ -167,7 +168,7 @@ class CalculatorInteractionTest {
             CalculatorScreen(
                 state = CalculatorUiState(
                     primaryValue = "15",
-                    secondaryExpression = "12 + 3 =",
+                    expression = CalculatorUiExpression("12", BinaryOperation.Add, "3"),
                     displayStatus = CalculatorDisplayStatus.Result,
                 ),
                 onAction = {},
@@ -189,8 +190,8 @@ class CalculatorInteractionTest {
         composeRule.setContent {
             CalculatorScreen(
                 state = CalculatorUiState(
-                    primaryValue = "Error",
-                    secondaryExpression = "1 ÷ 0 =",
+                    primaryValue = null,
+                    expression = CalculatorUiExpression("1", BinaryOperation.Divide, "0"),
                     displayStatus = CalculatorDisplayStatus.Error,
                 ),
                 onAction = {},

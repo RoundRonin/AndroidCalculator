@@ -44,7 +44,6 @@ internal fun RowScope.CalculatorKey(
     val scale by animateFloatAsState(
         targetValue = if (isPressed) PRESSED_SCALE else 1f,
         animationSpec = spring(stiffness = 700f, dampingRatio = 0.8f),
-        label = "calculator key press",
     )
     val hapticFeedback = LocalHapticFeedback.current
     Button(

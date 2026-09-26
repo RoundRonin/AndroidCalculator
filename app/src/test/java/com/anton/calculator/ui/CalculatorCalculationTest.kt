@@ -15,7 +15,7 @@ class CalculatorCalculationTest {
         val viewModel = calculatorViewModel()
 
         assertEquals(
-            CalculatorUiState(primaryValue = "0", secondaryExpression = ""),
+            CalculatorUiState(),
             viewModel.uiState.value,
         )
     }
@@ -28,7 +28,7 @@ class CalculatorCalculationTest {
         viewModel.onAction(CalculatorAction.Digit(2))
 
         assertEquals("12", viewModel.uiState.value.primaryValue)
-        assertEquals("", viewModel.uiState.value.secondaryExpression)
+        assertEquals(null, viewModel.uiState.value.expression)
     }
 
     @Test
@@ -64,7 +64,7 @@ class CalculatorCalculationTest {
         assertEquals(
             CalculatorUiState(
                 primaryValue = "0",
-                secondaryExpression = "12 +",
+                expression = CalculatorUiExpression("12", BinaryOperation.Add),
                 selectedOperation = BinaryOperation.Add,
             ),
             viewModel.uiState.value,
@@ -76,7 +76,7 @@ class CalculatorCalculationTest {
         assertEquals(
             CalculatorUiState(
                 primaryValue = "15",
-                secondaryExpression = "12 + 3 =",
+                expression = CalculatorUiExpression("12", BinaryOperation.Add, "3"),
                 displayStatus = CalculatorDisplayStatus.Result,
             ),
             viewModel.uiState.value,
@@ -95,7 +95,7 @@ class CalculatorCalculationTest {
         assertEquals(
             CalculatorUiState(
                 primaryValue = "-5",
-                secondaryExpression = "3 − 8 =",
+                expression = CalculatorUiExpression("3", BinaryOperation.Subtract, "8"),
                 displayStatus = CalculatorDisplayStatus.Result,
             ),
             viewModel.uiState.value,
@@ -112,7 +112,10 @@ class CalculatorCalculationTest {
         viewModel.onAction(CalculatorAction.Equals)
 
         assertEquals("42", viewModel.uiState.value.primaryValue)
-        assertEquals("6 × 7 =", viewModel.uiState.value.secondaryExpression)
+        assertEquals(
+            CalculatorUiExpression("6", BinaryOperation.Multiply, "7"),
+            viewModel.uiState.value.expression,
+        )
     }
 
     @Test
@@ -125,7 +128,10 @@ class CalculatorCalculationTest {
         viewModel.onAction(CalculatorAction.Equals)
 
         assertEquals("3.5", viewModel.uiState.value.primaryValue)
-        assertEquals("7 ÷ 2 =", viewModel.uiState.value.secondaryExpression)
+        assertEquals(
+            CalculatorUiExpression("7", BinaryOperation.Divide, "2"),
+            viewModel.uiState.value.expression,
+        )
     }
 
     @Test
@@ -140,7 +146,7 @@ class CalculatorCalculationTest {
         assertEquals(
             CalculatorUiState(
                 primaryValue = "0",
-                secondaryExpression = "12 ×",
+                expression = CalculatorUiExpression("12", BinaryOperation.Multiply),
                 selectedOperation = BinaryOperation.Multiply,
             ),
             viewModel.uiState.value,
@@ -160,7 +166,7 @@ class CalculatorCalculationTest {
         assertEquals(
             CalculatorUiState(
                 primaryValue = "0",
-                secondaryExpression = "15 ×",
+                expression = CalculatorUiExpression("15", BinaryOperation.Multiply),
                 selectedOperation = BinaryOperation.Multiply,
             ),
             viewModel.uiState.value,
@@ -172,7 +178,7 @@ class CalculatorCalculationTest {
         assertEquals(
             CalculatorUiState(
                 primaryValue = "30",
-                secondaryExpression = "15 × 2 =",
+                expression = CalculatorUiExpression("15", BinaryOperation.Multiply, "2"),
                 displayStatus = CalculatorDisplayStatus.Result,
             ),
             viewModel.uiState.value,
@@ -217,7 +223,7 @@ class CalculatorCalculationTest {
         assertEquals(
             CalculatorUiState(
                 primaryValue = "0",
-                secondaryExpression = "12 +",
+                expression = CalculatorUiExpression("12", BinaryOperation.Add),
                 selectedOperation = BinaryOperation.Add,
             ),
             viewModel.uiState.value,
@@ -276,7 +282,7 @@ class CalculatorCalculationTest {
         assertEquals(
             CalculatorUiState(
                 primaryValue = "0",
-                secondaryExpression = "3 ×",
+                expression = CalculatorUiExpression("3", BinaryOperation.Multiply),
                 selectedOperation = BinaryOperation.Multiply,
             ),
             viewModel.uiState.value,
@@ -322,4 +328,3 @@ class CalculatorCalculationTest {
         assertEquals(CalculatorUiState(), viewModel.uiState.value)
     }
 }
-

@@ -41,7 +41,10 @@ class CalculatorInputAndFormattingTest {
         viewModel.onAction(CalculatorAction.Decimal)
 
         assertEquals("0,", viewModel.uiState.value.primaryValue)
-        assertEquals("4 +", viewModel.uiState.value.secondaryExpression)
+        assertEquals(
+            CalculatorUiExpression("4", BinaryOperation.Add),
+            viewModel.uiState.value.expression,
+        )
         viewModel.onAction(CalculatorAction.Digit(5))
         viewModel.onAction(CalculatorAction.Equals)
         assertEquals("4,5", viewModel.uiState.value.primaryValue)
@@ -90,7 +93,7 @@ class CalculatorInputAndFormattingTest {
 
         repeat(100) { viewModel.onAction(CalculatorAction.Digit(0)) }
 
-        assertEquals(32, viewModel.uiState.value.primaryValue.length)
+        assertEquals(32, requireNotNull(viewModel.uiState.value.primaryValue).length)
     }
 
     @Test
@@ -180,7 +183,10 @@ class CalculatorInputAndFormattingTest {
         val viewModel = calculate("1,5", BinaryOperation.Add, "2,25", decimalSeparator = ',')
 
         assertEquals("3,75", viewModel.uiState.value.primaryValue)
-        assertEquals("1,5 + 2,25 =", viewModel.uiState.value.secondaryExpression)
+        assertEquals(
+            CalculatorUiExpression("1,5", BinaryOperation.Add, "2,25"),
+            viewModel.uiState.value.expression,
+        )
     }
 
     @Test
@@ -193,10 +199,16 @@ class CalculatorInputAndFormattingTest {
         viewModel.onDecimalSeparatorChanged(',')
 
         assertEquals("2,25", viewModel.uiState.value.primaryValue)
-        assertEquals("1,5 +", viewModel.uiState.value.secondaryExpression)
+        assertEquals(
+            CalculatorUiExpression("1,5", BinaryOperation.Add),
+            viewModel.uiState.value.expression,
+        )
         viewModel.onAction(CalculatorAction.Equals)
         assertEquals("3,75", viewModel.uiState.value.primaryValue)
-        assertEquals("1,5 + 2,25 =", viewModel.uiState.value.secondaryExpression)
+        assertEquals(
+            CalculatorUiExpression("1,5", BinaryOperation.Add, "2,25"),
+            viewModel.uiState.value.expression,
+        )
     }
 
     @Test
@@ -209,4 +221,3 @@ class CalculatorInputAndFormattingTest {
         assertEquals("0", viewModel.uiState.value.primaryValue)
     }
 }
-

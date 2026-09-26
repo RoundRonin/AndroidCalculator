@@ -42,9 +42,12 @@ class CalculatorErrorTest {
 
         viewModel.onAction(CalculatorAction.Equals)
 
-        assertEquals("Error", viewModel.uiState.value.primaryValue)
+        assertEquals(null, viewModel.uiState.value.primaryValue)
         assertEquals(CalculatorDisplayStatus.Error, viewModel.uiState.value.displayStatus)
-        assertEquals("1 ÷ 0 =", viewModel.uiState.value.secondaryExpression)
+        assertEquals(
+            CalculatorUiExpression("1", BinaryOperation.Divide, "0"),
+            viewModel.uiState.value.expression,
+        )
     }
 
     @Test
@@ -56,7 +59,7 @@ class CalculatorErrorTest {
 
         viewModel.onAction(CalculatorAction.SelectOperation(BinaryOperation.Add))
 
-        assertEquals("Error", viewModel.uiState.value.primaryValue)
+        assertEquals(null, viewModel.uiState.value.primaryValue)
         assertEquals(CalculatorDisplayStatus.Error, viewModel.uiState.value.displayStatus)
     }
 
@@ -64,7 +67,7 @@ class CalculatorErrorTest {
     fun `zero divided by zero is an error rather than NaN`() {
         val viewModel = calculate("0", BinaryOperation.Divide, "0")
 
-        assertEquals("Error", viewModel.uiState.value.primaryValue)
+        assertEquals(null, viewModel.uiState.value.primaryValue)
         assertEquals(CalculatorDisplayStatus.Error, viewModel.uiState.value.displayStatus)
     }
 
@@ -81,7 +84,7 @@ class CalculatorErrorTest {
             }
         }
 
-        assertEquals("Error", viewModel.uiState.value.primaryValue)
+        assertEquals(null, viewModel.uiState.value.primaryValue)
         assertEquals(CalculatorDisplayStatus.Error, viewModel.uiState.value.displayStatus)
     }
 
@@ -128,4 +131,3 @@ class CalculatorErrorTest {
         assertEquals(error, viewModel.uiState.value)
     }
 }
-

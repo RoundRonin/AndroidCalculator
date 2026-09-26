@@ -36,7 +36,34 @@ internal fun CalculatorDisplay(
     primarySelectionState: SelectionState = rememberSelectionState(),
 ) {
     val errorDescription = stringResource(R.string.calculation_error_description)
-    val resultDescription = stringResource(R.string.result_description, state.primaryValue)
+    val primaryText = if (state.displayStatus == CalculatorDisplayStatus.Error) {
+        stringResource(R.string.calculation_error_label)
+    } else {
+        requireNotNull(state.primaryValue)
+    }
+    val resultDescription = stringResource(R.string.result_description, primaryText)
+    val expression = state.expression
+    val secondaryText = if (expression == null) {
+        null
+    } else {
+        val operationLabel = stringResource(expression.operation.labelResource)
+        val rightOperand = expression.rightOperand
+        if (rightOperand == null) {
+            stringResource(
+                R.string.pending_expression_format,
+                expression.leftOperand,
+                operationLabel,
+            )
+        } else {
+            stringResource(
+                R.string.completed_expression_format,
+                expression.leftOperand,
+                operationLabel,
+                rightOperand,
+                stringResource(R.string.equals_label),
+            )
+        }
+    }
     Column(
         modifier = modifier
             .testTag(DISPLAY_REGION_TAG)
@@ -44,9 +71,9 @@ internal fun CalculatorDisplay(
         horizontalAlignment = Alignment.End,
         verticalArrangement = Arrangement.Bottom,
     ) {
-        if (state.secondaryExpression.isNotEmpty()) {
+        if (secondaryText != null) {
             Text(
-                text = state.secondaryExpression,
+                text = secondaryText,
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag(SECONDARY_DISPLAY_TAG)
@@ -68,7 +95,7 @@ internal fun CalculatorDisplay(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
-                text = state.primaryValue,
+                text = primaryText,
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag(PRIMARY_DISPLAY_TAG)

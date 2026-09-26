@@ -1,7 +1,26 @@
 <resources>
     <string name="app_name">Calculator</string>
+    <string name="digit_0_label">0</string>
+    <string name="digit_1_label">1</string>
+    <string name="digit_2_label">2</string>
+    <string name="digit_3_label">3</string>
+    <string name="digit_4_label">4</string>
+    <string name="digit_5_label">5</string>
+    <string name="digit_6_label">6</string>
+    <string name="digit_7_label">7</string>
+    <string name="digit_8_label">8</string>
+    <string name="digit_9_label">9</string>
+    <string name="decimal_label">%1$s</string>
     <string name="clear_all_label">C</string>
     <string name="clear_entry_label">CE</string>
+    <string name="add_label">+</string>
+    <string name="subtract_label">−</string>
+    <string name="multiply_label">×</string>
+    <string name="divide_label">÷</string>
+    <string name="equals_label">=</string>
+    <string name="calculation_error_label">Error</string>
+    <string name="pending_expression_format">%1$s %2$s</string>
+    <string name="completed_expression_format">%1$s %2$s %3$s %4$s</string>
     <string name="add_description">Add</string>
     <string name="subtract_description">Subtract</string>
     <string name="multiply_description">Multiply</string>

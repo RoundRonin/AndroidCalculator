@@ -19,6 +19,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import com.anton.calculator.domain.BinaryOperation
 import com.anton.calculator.domain.CalculatorAction
+import com.anton.calculator.ui.CalculatorUiExpression
 import com.anton.calculator.ui.CalculatorUiState
 import com.anton.calculator.ui.theme.CalculatorTheme
 import org.junit.Assert.assertEquals
@@ -147,7 +148,10 @@ class CalculatorLayoutTest {
                         CalculatorScreen(
                             state = CalculatorUiState(
                                 primaryValue = "123456789012345",
-                                secondaryExpression = "123456789012 +",
+                                expression = CalculatorUiExpression(
+                                    "123456789012",
+                                    BinaryOperation.Add,
+                                ),
                             ),
                             onAction = actions::add,
                         )
