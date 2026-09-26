@@ -3,11 +3,15 @@
 package com.anton.calculator.ui.calculator.components
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.FontScale
+import androidx.compose.ui.test.WindowInsets
+import androidx.compose.ui.test.WindowSize
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasClickAction
@@ -16,9 +20,13 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.then
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowInsetsCompat
 import com.anton.calculator.domain.calculation.BinaryOperation
 import com.anton.calculator.domain.calculation.CalculatorAction
+import com.anton.calculator.ui.calculator.presentation.CalculatorDisplayStatus
 import com.anton.calculator.ui.calculator.presentation.CalculatorUiExpression
 import com.anton.calculator.ui.calculator.presentation.CalculatorUiState
 import com.anton.calculator.ui.theme.CalculatorTheme
@@ -26,6 +34,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import kotlin.math.roundToInt
 
 class CalculatorLayoutTest {
     @get:Rule
@@ -48,10 +57,26 @@ class CalculatorLayoutTest {
     }
 
     @Test
-    fun compactHeightConstraintsPlaceTheDisplayBesideTheSameKeypad() {
+    fun compactHeightUsesWideFourRowKeypadBelowTheDisplay() {
+        var minimumTarget = 0f
         composeRule.setContent {
-            Box(modifier = Modifier.size(width = 800.dp, height = 360.dp)) {
-                CalculatorScreen(state = CalculatorUiState(), onAction = {})
+            DeviceConfigurationOverride(
+                DeviceConfigurationOverride.WindowSize(
+                    DpSize(width = 800.dp, height = 360.dp),
+                ) then DeviceConfigurationOverride.WindowInsets(
+                    WindowInsetsCompat.Builder().build(),
+                ),
+            ) {
+                minimumTarget = with(LocalDensity.current) {
+                    48.dp.toPx()
+                }
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .testTag(LANDSCAPE_TEST_CONTAINER_TAG),
+                ) {
+                    CalculatorScreen(state = CalculatorUiState(), onAction = {})
+                }
             }
         }
 
@@ -60,7 +85,23 @@ class CalculatorLayoutTest {
             .fetchSemanticsNode().boundsInRoot
         val keypadBounds = composeRule.onNodeWithTag(KEYPAD_TAG)
             .fetchSemanticsNode().boundsInRoot
-        assertTrue(displayBounds.right <= keypadBounds.left)
+        val layoutBounds = composeRule.onNodeWithTag(LANDSCAPE_LAYOUT_TAG)
+            .fetchSemanticsNode().boundsInRoot
+        val containerBounds = composeRule.onNodeWithTag(LANDSCAPE_TEST_CONTAINER_TAG)
+            .fetchSemanticsNode().boundsInRoot
+        val keys = composeRule.onAllNodes(hasClickAction()).fetchSemanticsNodes()
+
+        assertTrue(displayBounds.bottom <= keypadBounds.top)
+        assertTrue(layoutBounds.width >= containerBounds.width * 0.85f)
+        assertEquals(18, keys.size)
+        assertEquals(4, keys.map { it.boundsInRoot.top.roundToInt() }.distinct().size)
+        keys.forEach { key ->
+            assertTrue(key.boundsInRoot.width >= minimumTarget)
+            assertTrue(
+                "Expected a 48 dp key, but bounds were ${key.boundsInRoot}",
+                key.boundsInRoot.height >= minimumTarget,
+            )
+        }
         listOf("C", "CE", "÷", "×", "−", "+", "=", ".").forEach { label ->
             composeRule.onNodeWithText(label).assertIsDisplayed()
         }
@@ -68,6 +109,38 @@ class CalculatorLayoutTest {
         (1..9).forEach { digit ->
             composeRule.onNodeWithText(digit.toString()).assertIsDisplayed()
         }
+    }
+
+    @Test
+    fun compactHeightKeepsACompletedResultLegible() {
+        var minimumResultHeight = 0f
+        composeRule.setContent {
+            DeviceConfigurationOverride(
+                DeviceConfigurationOverride.WindowSize(
+                    DpSize(width = 800.dp, height = 360.dp),
+                ) then DeviceConfigurationOverride.WindowInsets(
+                    WindowInsetsCompat.Builder().build(),
+                ),
+            ) {
+                minimumResultHeight = with(LocalDensity.current) { 48.dp.toPx() }
+                CalculatorScreen(
+                    state = CalculatorUiState(
+                        primaryValue = "15",
+                        expression = CalculatorUiExpression("12", BinaryOperation.Add, "3"),
+                        displayStatus = CalculatorDisplayStatus.Result,
+                    ),
+                    onAction = {},
+                )
+            }
+        }
+
+        val resultBounds = composeRule.onNodeWithTag(PRIMARY_DISPLAY_TAG)
+            .fetchSemanticsNode().boundsInRoot
+        assertTrue(
+            "Result is too small in landscape: $resultBounds",
+            resultBounds.height >= minimumResultHeight,
+        )
+        composeRule.onNodeWithTag(SECONDARY_DISPLAY_TAG).assertIsDisplayed()
     }
 
     @Test
@@ -204,3 +277,4 @@ class CalculatorLayoutTest {
 }
 
 private const val EXPANDED_TEST_CONTAINER_TAG = "expandedTestContainer"
+private const val LANDSCAPE_TEST_CONTAINER_TAG = "landscapeTestContainer"

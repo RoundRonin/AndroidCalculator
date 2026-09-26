@@ -13,27 +13,29 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 
 @Composable
 internal fun ColumnScope.KeypadRow(
-    actions: List<CalculatorAction?>,
+    cells: List<KeypadCell>,
     decimalSeparator: Char,
     selectedOperation: BinaryOperation?,
     onAction: (CalculatorAction) -> Unit,
     keyShape: Shape,
     squareKeys: Boolean,
+    spacing: Dp,
 ) {
     Row(
         modifier = if (squareKeys) Modifier.fillMaxWidth() else Modifier.fillMaxWidth().weight(1f),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(spacing),
     ) {
-        actions.forEach { action ->
+        cells.forEach { cell ->
             val cellModifier = if (squareKeys) {
-                Modifier.weight(1f).aspectRatio(1f)
+                Modifier.weight(cell.weight).aspectRatio(1f)
             } else {
-                Modifier.weight(1f).fillMaxHeight()
+                Modifier.weight(cell.weight).fillMaxHeight()
             }
+            val action = cell.action
             if (action == null) {
                 Spacer(modifier = cellModifier)
             } else {

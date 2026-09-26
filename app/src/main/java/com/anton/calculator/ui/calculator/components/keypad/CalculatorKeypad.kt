@@ -6,9 +6,10 @@ import com.anton.calculator.ui.calculator.components.KEYPAD_TAG
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 
@@ -17,22 +18,26 @@ internal fun CalculatorKeypad(
     decimalSeparator: Char,
     selectedOperation: BinaryOperation?,
     onAction: (CalculatorAction) -> Unit,
-    keyShape: Shape,
-    squareKeys: Boolean,
+    layout: CalculatorKeypadLayout,
     modifier: Modifier = Modifier,
 ) {
+    val squareKeys = layout == CalculatorKeypadLayout.Portrait
+    val keyShape = if (squareKeys) CircleShape else MaterialTheme.shapes.large
+    val spacing = if (squareKeys) 8.dp else 4.dp
+
     Column(
         modifier = modifier.testTag(KEYPAD_TAG),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(spacing),
     ) {
-        keypadRows.forEach { actions ->
+        layout.rows.forEach { cells ->
             KeypadRow(
-                actions = actions,
+                cells = cells,
                 decimalSeparator = decimalSeparator,
                 selectedOperation = selectedOperation,
                 onAction = onAction,
                 keyShape = keyShape,
                 squareKeys = squareKeys,
+                spacing = spacing,
             )
         }
     }

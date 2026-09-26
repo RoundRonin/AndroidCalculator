@@ -18,7 +18,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.anton.calculator.ui.calculator.components.layout.CompactHeightBreakpoint
 import com.anton.calculator.ui.calculator.components.layout.LandscapeCalculator
-import com.anton.calculator.ui.calculator.components.layout.MaxContentWidth
+import com.anton.calculator.ui.calculator.components.layout.MaxLandscapeContentWidth
+import com.anton.calculator.ui.calculator.components.layout.MaxPortraitContentWidth
 import com.anton.calculator.ui.calculator.components.layout.PortraitCalculator
 
 @Composable
@@ -41,7 +42,7 @@ internal fun CalculatorScreen(
                     state = state,
                     onAction = onAction,
                     modifier = Modifier
-                        .widthIn(max = MaxContentWidth)
+                        .widthIn(max = MaxLandscapeContentWidth)
                         .fillMaxSize()
                         .testTag(LANDSCAPE_LAYOUT_TAG),
                 )
@@ -50,7 +51,7 @@ internal fun CalculatorScreen(
                     state = state,
                     onAction = onAction,
                     modifier = Modifier
-                        .widthIn(max = MaxContentWidth)
+                        .widthIn(max = MaxPortraitContentWidth)
                         .fillMaxSize()
                         .testTag(PORTRAIT_LAYOUT_TAG),
                 )
