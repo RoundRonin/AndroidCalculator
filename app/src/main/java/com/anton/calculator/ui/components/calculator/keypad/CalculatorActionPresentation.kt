@@ -1,12 +1,15 @@
-package com.anton.calculator.ui.components
+package com.anton.calculator.ui.components.calculator.keypad
 
 import com.anton.calculator.R
 import com.anton.calculator.domain.BinaryOperation
 import com.anton.calculator.domain.CalculatorAction
+import com.anton.calculator.ui.components.calculator.utilities.descriptionResource
+import com.anton.calculator.ui.components.calculator.utilities.labelResource
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import com.anton.calculator.ui.components.calculator.keypad.utilities.labelResource
 
 @Composable
 internal fun CalculatorAction.toKeyPresentation(

@@ -1,4 +1,4 @@
-package com.anton.calculator.ui.components
+package com.anton.calculator.ui.components.calculator.keypad
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -46,6 +46,7 @@ internal fun RowScope.CalculatorKey(
         animationSpec = spring(stiffness = 700f, dampingRatio = 0.8f),
     )
     val hapticFeedback = LocalHapticFeedback.current
+
     Button(
         onClick = {
             hapticFeedback.performHapticFeedback(HapticFeedbackType.VirtualKey)

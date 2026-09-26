@@ -1,6 +1,6 @@
 package com.anton.calculator.ui
 
-import com.anton.calculator.ui.components.CalculatorScreen
+import com.anton.calculator.ui.components.calculator.CalculatorScreen
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect

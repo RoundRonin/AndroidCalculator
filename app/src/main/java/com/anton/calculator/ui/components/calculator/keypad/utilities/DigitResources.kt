@@ -1,4 +1,4 @@
-package com.anton.calculator.ui.components
+package com.anton.calculator.ui.components.calculator.keypad.utilities
 
 import com.anton.calculator.R
 

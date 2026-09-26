@@ -10,7 +10,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import com.anton.calculator.ui.components.PRIMARY_DISPLAY_TAG
+import com.anton.calculator.ui.components.calculator.PRIMARY_DISPLAY_TAG
 import org.junit.Rule
 import org.junit.Test
 

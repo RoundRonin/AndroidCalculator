@@ -1,4 +1,4 @@
-package com.anton.calculator.ui.components
+package com.anton.calculator.ui.components.calculator
 
 internal const val PRIMARY_DISPLAY_TAG = "primaryDisplay"
 internal const val SECONDARY_DISPLAY_TAG = "secondaryDisplay"

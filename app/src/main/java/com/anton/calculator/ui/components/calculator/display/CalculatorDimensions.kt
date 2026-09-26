@@ -1,4 +1,4 @@
-package com.anton.calculator.ui.components
+package com.anton.calculator.ui.components.calculator.display
 
 import androidx.compose.ui.unit.dp
 

@@ -1,4 +1,4 @@
-package com.anton.calculator.ui.components
+package com.anton.calculator.ui.components.calculator.display
 
 import com.anton.calculator.R
 import com.anton.calculator.ui.CalculatorDisplayStatus
@@ -28,6 +28,10 @@ import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
+import com.anton.calculator.ui.components.calculator.DISPLAY_REGION_TAG
+import com.anton.calculator.ui.components.calculator.PRIMARY_DISPLAY_TAG
+import com.anton.calculator.ui.components.calculator.SECONDARY_DISPLAY_TAG
+import com.anton.calculator.ui.components.calculator.utilities.labelResource
 
 @Composable
 internal fun CalculatorDisplay(

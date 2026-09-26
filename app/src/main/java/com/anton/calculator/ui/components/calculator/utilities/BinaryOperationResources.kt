@@ -1,4 +1,4 @@
-package com.anton.calculator.ui.components
+package com.anton.calculator.ui.components.calculator.utilities
 
 import com.anton.calculator.R
 import com.anton.calculator.domain.BinaryOperation

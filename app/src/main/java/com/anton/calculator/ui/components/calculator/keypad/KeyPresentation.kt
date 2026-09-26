@@ -1,4 +1,4 @@
-package com.anton.calculator.ui.components
+package com.anton.calculator.ui.components.calculator.keypad
 
 import androidx.compose.ui.graphics.Color
 

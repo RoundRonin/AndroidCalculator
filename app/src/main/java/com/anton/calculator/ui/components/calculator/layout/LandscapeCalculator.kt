@@ -1,7 +1,8 @@
-package com.anton.calculator.ui.components
+package com.anton.calculator.ui.components.calculator.layout
 
 import com.anton.calculator.domain.CalculatorAction
 import com.anton.calculator.ui.CalculatorUiState
+import com.anton.calculator.ui.components.calculator.keypad.CalculatorKeypad
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -11,7 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.anton.calculator.ui.components.calculator.display.CalculatorDisplay
 
+// TODO same here as in Portrait mode
 @Composable
 internal fun LandscapeCalculator(
     state: CalculatorUiState,

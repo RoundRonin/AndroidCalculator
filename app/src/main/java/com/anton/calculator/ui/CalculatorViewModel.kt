@@ -6,6 +6,7 @@ import com.anton.calculator.persistence.CalculatorStateStore
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import com.anton.calculator.domain.CalculatorReducer.reduce
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,7 +22,7 @@ internal class CalculatorViewModel(
     val uiState: StateFlow<CalculatorUiState> = mutableUiState.asStateFlow()
 
     fun onAction(action: CalculatorAction) {
-        calculatorState = CalculatorReducer.reduce(calculatorState, action)
+        calculatorState = reduce(calculatorState, action)
         stateStore.save(calculatorState)
         publishUiState()
     }

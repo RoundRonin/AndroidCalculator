@@ -1,4 +1,4 @@
-package com.anton.calculator.ui.components
+package com.anton.calculator.ui.components.calculator
 
 import com.anton.calculator.domain.CalculatorAction
 import com.anton.calculator.ui.CalculatorUiState
@@ -16,6 +16,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import com.anton.calculator.ui.components.calculator.layout.LandscapeCalculator
+import com.anton.calculator.ui.components.calculator.layout.PortraitCalculator
+import com.anton.calculator.ui.components.calculator.display.CompactHeightBreakpoint
+import com.anton.calculator.ui.components.calculator.display.MaxContentWidth
 
 @Composable
 internal fun CalculatorScreen(

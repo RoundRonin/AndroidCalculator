@@ -12,8 +12,7 @@ internal object CalculatorReducer {
         }
 
     private fun appendDigit(state: CalculatorState, digit: Int): CalculatorState {
-        val editableState = state.prepareForInput()
-        return when (editableState) {
+        return when (val editableState = state.prepareForInput()) {
             is CalculatorState.EnteringFirstOperand -> editableState.entry
                 .appendCalculatorDigit(digit)?.let { editableState.copy(entry = it) }
                 ?: editableState
@@ -25,8 +24,7 @@ internal object CalculatorReducer {
     }
 
     private fun appendDecimal(state: CalculatorState): CalculatorState {
-        val editableState = state.prepareForInput()
-        return when (editableState) {
+        return when (val editableState = state.prepareForInput()) {
             is CalculatorState.EnteringFirstOperand -> editableState.copy(
                 entry = editableState.entry.withDecimal(),
             )

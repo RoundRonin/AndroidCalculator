@@ -1,7 +1,8 @@
-package com.anton.calculator.ui.components
+package com.anton.calculator.ui.components.calculator.keypad
 
 import com.anton.calculator.domain.BinaryOperation
 import com.anton.calculator.domain.CalculatorAction
+import com.anton.calculator.ui.components.calculator.KEYPAD_TAG
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
