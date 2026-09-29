@@ -15,6 +15,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import com.anton.calculator.ui.calculator.components.layout.CompactHeightBreakpoint
 import com.anton.calculator.ui.calculator.components.layout.LandscapeCalculator
@@ -28,7 +30,11 @@ internal fun CalculatorScreen(
     onAction: (CalculatorAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(modifier = modifier.fillMaxSize()) {
+    Surface(
+        modifier = modifier
+            .fillMaxSize()
+            .semantics { testTagsAsResourceId = true },
+    ) {
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
