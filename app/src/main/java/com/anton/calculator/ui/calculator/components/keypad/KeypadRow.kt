@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
 
 @Composable
@@ -47,7 +48,7 @@ internal fun ColumnScope.KeypadRow(
                     containerColor = presentation.containerColor,
                     contentColor = presentation.contentColor,
                     shape = keyShape,
-                    modifier = cellModifier,
+                    modifier = cellModifier.testTag(action.keyTestTag),
                     onClick = { onAction(action) },
                 )
             }
