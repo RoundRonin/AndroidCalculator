@@ -16,7 +16,11 @@ internal fun Double.toCalculatorText(): String {
 }
 
 internal fun String.appendCalculatorDigit(digit: Int): String? {
-    val candidate = if (this == CalculatorState.ZERO) digit.toString() else this + digit
+    val candidate = when (this) {
+        CalculatorState.ZERO -> digit.toString()
+        CalculatorState.NEGATIVE_ZERO -> "-$digit"
+        else -> this + digit
+    }
     return candidate.takeIf {
         it.length <= MAX_INPUT_CHARACTERS && it.significantDigitCount() <= MAX_INPUT_DIGITS
     }

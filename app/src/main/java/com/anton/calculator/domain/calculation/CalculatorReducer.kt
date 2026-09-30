@@ -46,9 +46,14 @@ internal object CalculatorReducer {
         operation: BinaryOperation,
     ): CalculatorState = when (state) {
         is CalculatorState.Error -> state
-        is CalculatorState.OperationPending -> state.copy(
-            calculation = state.calculation.copy(operation = operation),
-        )
+        is CalculatorState.OperationPending -> if (operation == BinaryOperation.Subtract) {
+            CalculatorState.EnteringSecondOperand(
+                calculation = state.calculation,
+                entry = CalculatorState.NEGATIVE_ZERO,
+            )
+        } else {
+            state.copy(calculation = state.calculation.copy(operation = operation))
+        }
         is CalculatorState.EnteringSecondOperand -> when (val result = evaluate(state)) {
             is CalculatorState.Result -> result.startOperation(operation)
             is CalculatorState.Error -> result

@@ -19,6 +19,7 @@ internal sealed interface CalculatorState {
 
     companion object {
         const val ZERO = "0"
+        const val NEGATIVE_ZERO = "-0"
 
         fun initial(): CalculatorState = EnteringFirstOperand()
     }
